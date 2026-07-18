@@ -120,6 +120,25 @@ function mapReplyToAnswer(
   return {};
 }
 
+/** Human-readable transcript line for a structured answer ("4 · Up to the knee"), not raw JSON. */
+function answersToText(protocol: CdsProtocol, answers: AnswerMap): string {
+  const all = [...protocol.baseline, ...protocol.bank];
+  const parts: string[] = [];
+  for (const [qid, value] of Object.entries(answers)) {
+    const q = all.find((x) => x.id === qid);
+    if (q?.kind === "chips") {
+      const chosen = Array.isArray(value) ? value : [value];
+      const labels = chosen.map(
+        (v) => q.options.find((o) => o.value === String(v))?.label ?? String(v),
+      );
+      parts.push(labels.join(", "));
+    } else {
+      parts.push(String(value));
+    }
+  }
+  return parts.join(" · ");
+}
+
 /** Next unanswered baseline question, or null when baseline is complete. */
 function nextBaselineQuestion(protocol: CdsProtocol, answers: AnswerMap): Question | null {
   return protocol.baseline.find((q) => !(q.id in answers)) ?? null;
@@ -302,8 +321,14 @@ export async function processCheckin(
   // 10. Patient ack. Model copy when it ran; deterministic otherwise. A confirmed red flag
   //     ALWAYS carries the front-desk line (prompt hard rule, enforced here too).
   const redConfirmed = decision.confirmedRed.length > 0 || decision.hardPhraseHits.length > 0;
+  const timerAck =
+    history.length === 0
+      ? "Thanks for confirming — a few quick questions while you wait."
+      : "Just checking in.";
   let patientAck =
-    opts.scripted?.patientAck ?? model?.patient_ack ?? deterministicAck(redConfirmed);
+    opts.scripted?.patientAck ??
+    model?.patient_ack ??
+    (event.type === "timer" && !redConfirmed ? timerAck : deterministicAck(redConfirmed));
   if (redConfirmed && !patientAck.includes(FRONT_DESK_LINE)) {
     patientAck = `${patientAck} ${FRONT_DESK_LINE}`;
   }
@@ -337,7 +362,7 @@ export async function processCheckin(
     event.type === "sms_in"
       ? event.body.slice(0, FREE_TEXT_CAP)
       : event.type === "answers"
-        ? [JSON.stringify(event.answers), event.freeText].filter(Boolean).join(" — ")
+        ? [answersToText(protocol, event.answers), event.freeText].filter(Boolean).join(" — ")
         : event.type === "call_result"
           ? (event.transcript?.slice(0, FREE_TEXT_CAP) ?? "[call completed]")
           : null;
@@ -385,12 +410,13 @@ export async function processCheckin(
   //     same-reason dedup means a repeat category updates the alert instead of re-paging.
   //     Only fires on a deterministic escalate; a notifier failure must not 500 a check-in.
   if (decision.tierFinal === "escalate") {
+    // Pager copy is DETERMINISTIC-FIRST: confirmed flag labels + numeric trend (the frozen
+    // "WR:" format wants facts, not model prose). Model wording only when no flag exists.
     const reason =
-      model?.reason_one_liner ||
       decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
       (decision.hardPhraseHits.length > 0
         ? `patient reported "${decision.hardPhraseHits[0]}"`
-        : "deterministic escalation");
+        : model?.reason_one_liner || "deterministic escalation");
     try {
       await notifyEscalation(db, {
         patientId,
@@ -398,7 +424,7 @@ export async function processCheckin(
         ageSex: `${patient.age ?? "?"}${(patient.sex ?? "").charAt(0).toUpperCase()}`,
         complaint: protocol.complaint,
         reason,
-        trend: model?.trend_summary || trace.severityHistory.join("→") || "n/a",
+        trend: trace.severityHistory.join("→") || model?.trend_summary || "n/a",
         confirmedRed: decision.confirmedRed,
         hardPhraseHits: decision.hardPhraseHits,
       });
