@@ -10,6 +10,16 @@ VIGIL monitors ED waiting-room patients (ESI 3–5) between triage and being see
 > invariants, guardrail rules, cadence math, and SDK usage below remain in force.** Work is tracked in Linear
 > (**VIG-5 … VIG-16** = PR0 … PR11), one PR per ticket, squash-merged to `main` with a checkpoint before each merge.
 
+## Session coordination — STATUS.md (read first, update always)
+
+Two Claude sessions build this in parallel (Pranav + Charumathi). **[STATUS.md](STATUS.md)** at the repo root is the git-native, cross-session source of truth — it works even for a session without Linear access. It is mandatory, not optional:
+- **At the start of EVERY session:** read `STATUS.md` and `ARCHITECTURE.md` before touching anything.
+- **Update `STATUS.md` in detail whenever you:** start / finish / hand off a ticket · open or merge a PR · make an architecture or scope decision · hit or clear a blocker · complete a setup step (Twilio / ElevenLabs / Supabase / Vercel) · change env vars or the frozen `lib/types.ts` contracts.
+- **Keep the per-ticket status table current** (status · owner · branch · notes) and **consistent with Linear** (VIG-5…18).
+- **The "Build log" is append-only, newest first** — each entry dated, with which session/human, what changed, the resulting state, and the immediate next step.
+- **Commit STATUS.md promptly and push** so the other session sees it. For cross-session-critical updates (a blocker, or any change to `lib/types.ts` or another contract), push a STATUS-only commit **straight to `main` immediately** — don't wait for your feature PR.
+- **Never let it go stale:** if you did something meaningful and didn't record it in STATUS.md, you are not done with the task.
+
 **Context that shapes every decision:** judged live at a hackathon (Execution 30%). A small finished thing beats a big broken thing. Prefer the simplest implementation that passes the test gate.
 
 ## Commands
