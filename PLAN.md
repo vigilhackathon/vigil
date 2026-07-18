@@ -1,5 +1,12 @@
 # VIGIL — The Agent That Watches the Waiting Room
 
+> **⚠️ v4 PIVOT — read [`ARCHITECTURE.md`](ARCHITECTURE.md) first.** The channel (now **Twilio SMS**, not a web page),
+> hero case (now **cellulitis**, not ABDO), clinical-content source (now a **mock CDS** that authors the protocol per
+> visit), intake (now **mock FHIR EMR** lookup), voice (now an **escalation phone call** via ElevenLabs + Twilio Voice),
+> and nurse surface (now a **mock EMR UI**) all changed. **Everything below about the *safety model, guardrail tier
+> rules, cadence math, SDK usage, and Q&A* is still valid and authoritative** — only the pivoted areas above are
+> superseded by ARCHITECTURE.md. Live tickets: Linear **VIG-5 … VIG-16**.
+
 **v3.2 — FINAL: Pranav's v3.1 (3 Codex reviews) merged with Charumathi's plan. Sat Jul 18, 2026 (event day). Build 10:30–17:00, submit 17:00 sharp.**
 Event: The Future of Agentic AI in Healthcare (Abridge × Anthropic × Lightspeed), Shack15 SF. Judging R1: ~3-min live demo + 1–2 min Q&A (Abridge clinicians). Weights: Execution 30 / Creativity 25 / Impact 20 / Technical 20. Banned: dashboard-as-main-feature, basic chatbots, Streamlit, basic RAG. Repo public; demo only event-hours work.
 
@@ -64,7 +71,7 @@ VIGIL monitors ESI 3–5 ambulatory ED waiting-room patients between triage and 
 ```sql
 create table patients (
   id uuid primary key default gen_random_uuid(),
-  name text not null, age int, complaint text,
+  name text not null, age int, sex text, complaint text,
   esi int not null check (esi between 3 and 5),
   protocol text not null,
   baseline jsonb,
@@ -160,7 +167,7 @@ Then Vercel import (env §1.4) → **deployed skeleton ~11:00** → fire the sch
 ```
 A: lib/types.ts (PR0 only, then FROZEN) · lib/protocols.ts · lib/guardrail.ts · lib/agent.ts ·
    lib/checkin-service.ts · lib/notifier.ts · lib/supabase-server.ts · supabase/migrations/ ·
-   app/api/{triage,checkin,ack,handoff,demo}/ · scripts/{test-guardrail,smoke-parse,smoke-api}.ts
+   app/api/** (ALL routes — triage, checkin, ack, state, transcript, handoff, demo) · scripts/{test-guardrail,smoke-parse,smoke-api}.ts
 B: app/{triage,patient,nurse,demo}/pages · app/layout.tsx · app/globals.css · app/page.tsx ·
    lib/supabase-browser.ts · lib/scripts.ts · scripts/pregen-audio.ts · public/audio/
 PR0-shared (then ask before touching): package.json · lib/types.ts · README.md (A owns at submission)
@@ -181,14 +188,14 @@ Define exactly these types, these names:
 - **ApiError** — {error: string}; every route returns this shape on 4xx/5xx.
 
 ### API contracts (freeze at PR0; zod-validate every request body; unknown patientId → 404 `{error}`)
-- `POST /api/triage` `{name, age, complaint, esi, protocol}` → `{patientId}` · 400 if esi∉3–5 or protocol invalid
+- `POST /api/triage` `{name, age, sex, complaint, esi, protocol}` → `{patientId}` · 400 if esi∉3–5 or protocol invalid · sex feeds the alert payload `<age><sex>`
 - `POST /api/checkin` `{patientId, event}` → `CheckinResponse` · freeText capped at 500 chars server-side
 - `POST /api/ack` `{patientId}` → `{ok: true}`
 - `POST /api/handoff` `{patientId}` → `{markdown}`
 - `GET  /api/transcript?patientId=` → `{messages: […]}` (server-side read; board row-click)
 - `GET  /api/state?patientId=` → `{patient, lastAgentMessage, currentQuestion, lineId, ackAt}` — **the patient page is SERVER-STATE-DRIVEN**: it polls this every ~2s and renders the latest agent question, audio lineId, and ack banner from it; local taps POST `/api/checkin` then refetch. This is what makes driver-injected beats appear on the patient phone automatically — the phone is a viewer of server state, never a parallel state machine.
-- `POST /api/demo` `{action: "reset"|"advance", patientId?, beat?}` → `{ok}` · 503 unless `DEMO_MODE=true`
-- **Baseline accumulates across one-at-a-time posts (the one-question UI means the first answer must NOT close baseline):** `patients.baseline = {complete: boolean, answers: {…}, severityBaseline: number}`. Each answers event merges in; `complete` flips true only when every baseline question id is present; `phase = baseline.complete ? "checkin" : "baseline"`. Flags are evaluated on every accumulated update — a red chip during baseline escalates immediately, not after completion.
+- `POST /api/demo` — `{action:"reset"}` → `{patients:[{slug:"chen",patientId},{slug:"dave",patientId}], seedIds:[…]}` · `{action:"advance", slug, beatIndex}` → `{ok, applied}` (idempotent: `applied:false` when that index already ran) · 503 unless `DEMO_MODE=true`
+- **Baseline accumulates across one-at-a-time posts (the one-question UI means the first answer must NOT close baseline):** `patients.baseline = {complete: boolean, answers: {…}, severityBaseline: number}`. Each answers event merges in; `complete` flips true only when every baseline question id is present; `phase = baseline.complete ? "checkin" : "baseline"`. Flags are evaluated on every accumulated update — an intrinsically dangerous chip during baseline (blood, rigid belly, presyncope) escalates immediately, not after completion. **Change-semantics flags use baseline variants:** where a RED flag means "new/changed" (ABDO A1 migration, A2 new fever), the matching baseline chip maps to a Watch-grade `A1b`/`A2b` instead — a finding the triage nurse just saw is not an interval change.
 
 **State & demo semantics (frozen — both sessions implement exactly this):**
 - **One agent message is persisted per issued question** (content = patient_ack + question text, trace attached). `/api/state` derives `lastAgentMessage`, `currentQuestion`, and `lineId` from it; while baseline is incomplete it returns `currentQuestion: null, baselineComplete: false` and the patient page walks `protocol.baseline` locally.
@@ -224,7 +231,7 @@ Build `app/patient/[id]` against a **hardcoded fixture** of `CheckinResponse` fi
 Triage → QR (phone/LTE) → baseline → 2 check-ins → tier visible in Supabase table editor + patient UI. **Slip past 13:30 ⇒ execute cut ladder from the top.**
 
 ### PR-A2 (13:15–14:15) — handoff + demo advance + overdue
-Deterministic SBAR **template** from CheckinTrace history (ships regardless) → Claude upgrade (§2 handoff config) behind the same funnel → **`/api/transcript`** (B2's board needs it) → **`lib/notifier.ts`** (interface + Console/MockVoalte adapters, ~30 min; Twilio adapter is stretch) → `/api/demo` advance (scripted beats through checkin-service) → overdue derivation in board data (`now > next_checkin_due + cadence` → amber "monitoring lost — eyeball check advised").
+Deterministic SBAR **template** from CheckinTrace history (ships regardless) → Claude upgrade (§2 handoff config) behind the same funnel → **`/api/transcript`** (B2's board needs it) → **`lib/notifier.ts`** (interface + Console/MockVoalte adapters, ~30 min; TwilioAdapter itself is written in the stretch, against this interface) → **alert-event persistence**: every fired/updated alert is a `messages` row (`role='system'`, `trace.kind='alert'`, payload as content) — feeds B's MockVoalte panel + the alerts/hour counter → `/api/demo` advance (scripted beats through checkin-service). (Overdue badge is B's, client-side from row fields.)
 **Gate:** smoke-api extended: full Chen beat sequence via demo advance → escalate + ack + handoff markdown contains the negatives.
 
 ### PR-B2 (13:15–14:15) — nurse board (polling) + driver page
@@ -307,10 +314,10 @@ Thresholds are prototype defaults, clinician-configurable per site. Patient lang
 - **Routine:** none of the above; de-escalation from watch only after 2 consecutive stable cycles.
 
 **ABDO (abdominal pain — THE HERO PROTOCOL; Chen's arc; Charumathi red-pens wording first):**
-- Baseline: B1 scale "How bad is the pain right now, 0 to 10?" · B2 chips "Where is the pain right now?" [all over, or around the belly button / **lower RIGHT side→A1** / lower left side / upper belly / somewhere else] · B3 chips multi "Right now, do you have any of these?" [fever or chills→**A2** / belly feels hard or board-like→**A4** / blood in vomit or stool, or black tar-like stool→**A3** / felt faint or fainted→**A5** / vomiting and can't keep fluids down→W1 / might be pregnant→**P-mod** / none of these]
+- Baseline: B1 scale "How bad is the pain right now, 0 to 10?" · B2 chips "Where is the pain right now?" [all over, or around the belly button / lower RIGHT side→**A1b** (Watch — RLQ *present at baseline* is not *migration*) / lower left side / upper belly / somewhere else] · B3 chips multi "Right now, do you have any of these?" [fever or chills→**A2b** (Watch — fever at baseline is not *new* fever) / belly feels hard or board-like→**A4** / blood in vomit or stool, or black tar-like stool→**A3** / felt faint or fainted→**A5** / vomiting and can't keep fluids down→W1 / might be pregnant→**P-mod** / none of these]
 - Bank: Q-sev scale · Q-loc chips "Has the pain MOVED since last time — especially to the lower right side?" [yes, lower right→A1 / yes, somewhere else→W3 / no] · Q-fever chips "Do you have fever or chills right now?" [yes→A2/no] · Q-vomit chips "Any vomiting since I last checked?" [vomiting, can't keep fluids down→W1 / vomited once or twice→W2 / no] · Q-rigid chips "Does your belly feel hard or rigid when you press on it?" [yes→A4/no] · Q-blood chips "Any blood in vomit or stool, or black tar-like stool?" [yes→A3/no] · Q-faint chips "Do you feel like you might faint?" [yes→A5/no] · Q-open free "Has anything else changed since I last checked?"
-- RED: A1 pain migrated to RLQ · A2 new fever/chills with abdominal pain · A3 GI bleeding · A4 rigid abdomen · A5 presyncope/syncope · P1 (P-mod + severe pain or any bleeding) pregnancy red flag. WATCH: W1 can't keep fluids down · W2 vomiting · W3 pain moved elsewhere / character change. hardPhrases: "throwing up blood", "blood in my stool", "black stool", "passing out", "worst pain of my life".
-- **Chen's beats:** baseline peri-umbilical 5/10, none-of-the-above → T+1: sev 6, vomited once (W2) → quiet WATCH; agent's chosen next question = Q-loc → T+2: Q-loc **yes, lower right** + Q-fever **yes** → A1+A2 → **ESCALATE**: *"WR: Chen, 34F, abd pain — pain migrated RLQ, new fever; severity 5→6→7. Suggest re-triage."*
+- RED (change signals live in the BANK; intrinsically dangerous findings are red even at baseline): A1 pain migrated to RLQ (bank Q-loc only) · A2 new fever/chills (bank Q-fever only) · A3 GI bleeding · A4 rigid abdomen · A5 presyncope/syncope. WATCH: A1b RLQ-at-baseline · A2b fever-at-baseline · W1 can't keep fluids down · W2 vomiting · W3 pain moved elsewhere / character change. Pregnancy chip (**P-mod**) is recorded and surfaced in every nurse reason + the handoff; pregnancy-specific red flags are v2 (need clinician-defined thresholds + a bleeding question — don't half-build them). hardPhrases: "throwing up blood", "blood in my stool", "black stool", "passing out", "worst pain of my life".
+- **Chen's beats (exact scripted answers — fixtures, tests, and audio ALL generate from this sequence):** T0 baseline `{B1: 5, B2: belly-button area, B3: [none]}` → T+1 `{Q-sev: 6, Q-vomit: vomited once or twice (W2), Q-loc: no}` → quiet WATCH (Δ1 + W2) → T+2 `{Q-sev: 7, Q-loc: yes lower right (A1), Q-fever: yes (A2)}` → **ESCALATE**, trend 5→6→7: *"WR: Chen, 34F, abd pain — pain migrated RLQ, new fever; severity 5→6→7. Suggest re-triage."* (Driver beats batch several answers into one event — allowed by the contract; live patients answer one at a time.)
 
 **BACK (low back pain — Dave; the dangerous-miss screens):**
 - Baseline: scale + chips multi "Any of these right now?" [new numbness or tingling in your legs or groin→**K1** / new leg weakness→**K2** / trouble controlling bladder or bowels, or can't pee→**K3** / fever or chills→**K4** / none of these]
@@ -319,7 +326,7 @@ Thresholds are prototype defaults, clinician-configurable per site. Patient lang
 
 **Post-MVP reference (pitch/Q&A only, NOT built today):** CARD (chest pain: radiation to arm/jaw/back / SOB at rest / diaphoresis / presyncope; watch: nausea, palpitations) · RESP (worse SOB at rest / can't finish a sentence / lips blue-gray / noisy breathing / confusion) · NEURO (thunderclap / confusion / slurred speech / face droop / limb weakness / vision loss / stiff neck + fever / seizure) · SKIN (fast-spreading redness / pain out of proportion / fever onset / dusky-blistering) · GEN fallback.
 
-Cadence: ESI 3 → 10 min · ESI 4–5 → 25 min · Watch → halved. Overdue (board-derived) → amber "monitoring lost — eyeball check advised."
+Cadence: ESI 3 → 10 min · ESI 4–5 → 25 min · Watch **or Escalate** → halved (matches §3 semantics). Overdue (board-derived, client-side on the board from `next_checkin_due + cadence_minutes`) → amber "monitoring lost — eyeball check advised."
 
 ---
 
