@@ -31,7 +31,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 | PR8 | VIG-13 | Handoff/SBAR + transcript | ✅ merged | Claude (guardrail clone) | merged (PR #11) | Template-first + Claude upgrade; negatives exclude later-positives |
 | PR9 | VIG-14 | Demo driver + cellulitis scripts | 🟡 in review | Claude (guardrail clone) | `pr09-demo-driver` | **PR #12 open.** Dress run green: chen routine→watch→ESCALATE (alert w/ 3 flags, 4→5→7), dave holds, advance idempotent, thread auto-renders beats |
 | PR10 | VIG-15 | Mock EMR UI (dashboard + record tabs) | 🟡 | **Charumathi** | — | **start fixture-first NOW** against frozen types; swap to real APIs when PR5/7/8 land |
-| PR11 | VIG-16 | Escalation voice call (ElevenLabs) [REQUIRED — live channel] | ⚪ | — | — | needs VIG-18 + PR4; Twilio Voice works now |
+| PR11 | VIG-16 | Escalation voice call (ElevenLabs) [REQUIRED — live channel] | 🟡 in review | Pranav/Claude | `pr11-voice-call` | **PR #13 open.** call trigger (deterministic escalate, non-call event, env+phone gated) + `/api/call-result` (HMAC + deterministic parse) + dynamic-var builder from frozen protocol. Build green; live-call test pending a demo phone. |
 | SETUP | VIG-17 | Twilio account/number/verify/webhook | ⚪ | Pranav | — | **before lunch** |
 | SETUP | VIG-18 | ElevenLabs Conv AI agent + import number | ⚪ | Pranav | — | stretch support |
 
