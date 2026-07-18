@@ -21,6 +21,7 @@ import {
   validateNextQuestionId,
   type AnswerMap,
 } from "./guardrail";
+import { notifyEscalation } from "./notifier";
 import { supabaseServer } from "./supabase-server";
 import type {
   Baseline,
@@ -44,6 +45,8 @@ export class PatientNotFoundError extends Error {}
 interface PatientRow {
   id: string;
   name: string;
+  age: number | null;
+  sex: string | null;
   complaint: string | null;
   esi: number;
   channel: Channel;
@@ -171,7 +174,7 @@ export async function processCheckin(
   // 1. Load patient.
   const { data: patientData, error: pErr } = await db
     .from("patients")
-    .select("id, name, complaint, esi, channel, protocol, baseline, tier, review_now, stable_cycles")
+    .select("id, name, age, sex, complaint, esi, channel, protocol, baseline, tier, review_now, stable_cycles")
     .eq("id", patientId)
     .maybeSingle();
   if (pErr) throw new Error(`patients read failed: ${pErr.message}`);
@@ -196,7 +199,11 @@ export async function processCheckin(
   if (mErr) throw new Error(`messages read failed: ${mErr.message}`);
   const history = (msgData ?? []) as MessageRow[];
 
-  const priorTraces = history.map((m) => m.trace).filter((t): t is CheckinTrace => t != null);
+  // Only agent rows carry CheckinTrace — system rows hold Alert payloads (trace.kind='alert').
+  const priorTraces = history
+    .filter((m) => m.role === "agent")
+    .map((m) => m.trace)
+    .filter((t): t is CheckinTrace => t != null && "event" in t);
   const lastTrace = priorTraces.length ? priorTraces[priorTraces.length - 1] : null;
   const pendingQuestionId = lastTrace?.questionAskedId ?? null;
 
@@ -372,6 +379,32 @@ export async function processCheckin(
 
   if (decision.discardedFlags.length > 0) {
     console.warn(`[guardrail] discarded model flag ids for ${patientId}:`, decision.discardedFlags);
+  }
+
+  // 14. Nurse paging (VIG-12): every escalation flows through the notifier's policy —
+  //     same-reason dedup means a repeat category updates the alert instead of re-paging.
+  //     Only fires on a deterministic escalate; a notifier failure must not 500 a check-in.
+  if (decision.tierFinal === "escalate") {
+    const reason =
+      model?.reason_one_liner ||
+      decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
+      (decision.hardPhraseHits.length > 0
+        ? `patient reported "${decision.hardPhraseHits[0]}"`
+        : "deterministic escalation");
+    try {
+      await notifyEscalation(db, {
+        patientId,
+        name: patient.name,
+        ageSex: `${patient.age ?? "?"}${(patient.sex ?? "").charAt(0).toUpperCase()}`,
+        complaint: protocol.complaint,
+        reason,
+        trend: model?.trend_summary || trace.severityHistory.join("→") || "n/a",
+        confirmedRed: decision.confirmedRed,
+        hardPhraseHits: decision.hardPhraseHits,
+      });
+    } catch (e) {
+      console.error("[notifier] failed (check-in continues):", e);
+    }
   }
 
   return {
