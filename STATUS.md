@@ -38,15 +38,16 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 ## Setup checklist
 - [x] Supabase SQL run (patients + messages + realtime + RLS) ✓
 - [x] Vercel auto-deploy wired (14 deploys) — ⚠️ add env vars in Vercel dashboard (only in local .env.local so far)
-- [~] Twilio: account ✓ + funds ✓. Toll-free `+18559214240` **Voice ✓ = the demo number** (SMS dropped from critical path — A2P too slow; text is mocked in-app). Import into ElevenLabs next.
-- [~] ElevenLabs: Conv AI agent + import Twilio number (VIG-18) — in progress
+- [x] Twilio: account + funds + toll-free `+18559214240` (Voice) **imported into ElevenLabs**. SMS dropped (A2P); text mocked in-app. VIG-17 Done.
+- [x] ElevenLabs (VIG-18 Done, via API): agent `agent_5101kxvhjabme0t9dg9ya5fgjdbw` (prompt+first msg, **5 data-collection fields**, voice set) + toll-free `phnum_3801kxvjper5e93s4p6n1bn5m2hy` + **post-call webhook → `https://vigil-six-psi.vercel.app/api/call-result` (HMAC, linked)**. ⚠️ **PR11 must implement `/api/call-result`** or the webhook 404s (fallback: poll `GET /v1/convai/conversations/{id}`).
 - [x] Anthropic key in `.env.local`
 - [x] ElevenLabs key + voice id in `.env.local`
 - [x] Supabase URL + anon + service-role keys in `.env.local`
 
 ## Env vars (`.env.local`, never commit)
 - **Present:** `ANTHROPIC_API_KEY` · `ELEVENLABS_API_KEY` · `ELEVENLABS_VOICE_ID` · `NEXT_PUBLIC_SUPABASE_URL` · `NEXT_PUBLIC_SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY` · `DEMO_MODE`
-- **Still needed:** `TWILIO_ACCOUNT_SID` · `TWILIO_AUTH_TOKEN` · `TWILIO_NUMBER` · `ELEVENLABS_AGENT_ID` · `ELEVENLABS_AGENT_PHONE_NUMBER_ID`
+- **Now also present:** `TWILIO_ACCOUNT_SID` · `TWILIO_AUTH_TOKEN` · `ELEVENLABS_AGENT_ID` · `ELEVENLABS_AGENT_PHONE_NUMBER_ID` · `ELEVENLABS_WEBHOOK_SECRET`
+- **Still needed:** none for the demo (`TWILIO_NUMBER` only if we switch text→real SMS). ⚠️ **Mirror all of these into Vercel env vars** or the deployed app + call webhook won't work.
 
 ## Key decisions (log)
 - **⚠️ `.env.local` gotcha:** `NEXT_PUBLIC_SUPABASE_URL` was pasted WITH a trailing `/rest/v1/` — supabase-js needs the bare project URL. `lib/supabase-server.ts` normalizes it defensively; **Session B's `lib/supabase-browser.ts` must normalize too (or fix the env value + Vercel copy).**
