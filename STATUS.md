@@ -22,7 +22,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 |----|--------|-------|--------|-------|--------|-------|
 | PR0 | VIG-5 | scaffold + frozen v4 contracts | ✅ merged | Pranav/Claude | merged (PR #2) | `lib/types.ts` frozen, migration, `/api/sms` stub, smoke-parse. **zod/v4 required for SDK.** |
 | PR1 | VIG-6 | mock CDS + cellulitis protocol | 🟡 | **Charumathi** | — | clinical content; she'll add the protocol MD |
-| PR2 | VIG-7 | guardrail engine + tests | 🟡 | colleague | `pr02-guardrail` | WIP pushed; **continue in a SEPARATE clone** (deconflicted) |
+| PR2 | VIG-7 | guardrail engine + tests | 🟡 in review | Claude (guardrail clone) | `pr02-guardrail` | **PR #4 open** (checkpoint, not merged). 17/17 tests + build green. Pure protocol-agnostic engine; exports for PR4/PR7 |
 | PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | 🟡 in review | Claude subagent | `pr03-agent` | **PR #3 open**, build green, mergeable; awaiting checkpoint |
 | PR4 | VIG-9 | checkin-service (brain) + supabase-server | ⚪ | — | — | needs PR1,2,3 |
 | PR5 | VIG-10 | mock FHIR EMR + enroll + routes + smoke-api | ⚪ | — | — | needs PR4 |
@@ -57,6 +57,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 ## Build log (newest first)
 ### 2026-07-18
+- **PR #4 (guardrail) opened** from the separate `vigil-guardrail` clone — VIG-7 → In Review, **not merged** (checkpoint). `lib/guardrail.ts` is pure + protocol-agnostic (applies any `CdsProtocol`; decoupled from PR1's `lib/cds.ts`). `scripts/test-guardrail.ts` = cellulitis fixture + 17/17 PLAN §7.1 cases green; `npm run build` green. Exports for PR4/PR7: `evaluate`, `confirmedFlagsFromAnswers`, `hardPhraseHits`, `rulesTier`, `validateModel`, `validateNextQuestionId`, `parseYesNo`, `alertCategory`, `shouldPushAlert`, `maxTier`. Cadence read from `protocol.cadenceMinutes[tier]`.
 - **PR #3 (agent.ts) opened** by the subagent — build green, mergeable, **not merged** (awaiting checkpoint). Notable: `confidence` unbounded in zod; history folded into one user message.
 - **Deconflicted the shared working tree:** the guardrail session was coding in the SAME directory. Committed its WIP to `pr02-guardrail` + pushed; returned this dir to `main`. Guardrail must continue from a **separate clone**.
 - **Setup progress:** Twilio Account SID + Auth Token added to `.env.local` (phone number pending). Supabase SQL **not yet run**. Vercel: assumed auto-deploy (verifying).
@@ -68,6 +69,6 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 - **Scaffold done** (Next 15.5.20 / React 19.1.0) + deps installed (uncommitted, rides on PR0 branch).
 
 ## Now / Next / Blocked
-- **NOW:** PR1 (Charumathi), PR2 (colleague), PR3 (Claude subagent) in flight — all on the frozen types. Pranav + Claude doing Twilio (VIG-17) + ElevenLabs (VIG-18) setup.
+- **NOW:** PR2 (guardrail) → **PR #4 open, awaiting checkpoint**. PR3 (agent, PR #3) open. PR1 (Charumathi, CDS/cellulitis) in flight — all on the frozen types. Pranav + Claude doing Twilio (VIG-17) + ElevenLabs (VIG-18) setup.
 - **NEXT:** PR4 (checkin-service, the integrator) once PR1+PR2+PR3 land; then PR5 routes, PR6 SMS (needs Twilio), PR7 notifier.
 - **BLOCKED:** PR6 (SMS) & PR11 (call) on Twilio/ElevenLabs setup (VIG-17/18) — do the account setup in parallel with coding.
