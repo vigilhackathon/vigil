@@ -5,7 +5,7 @@
 > Linear in sync. Update rules: see **CLAUDE.md → "Session coordination — STATUS.md"**. If you did something
 > meaningful and didn't record it here, you're not done.
 
-**Last updated:** 2026-07-18 — v4 planning complete; PR0 in progress.
+**Last updated:** 2026-07-18 — PR0 built, gates green, PR #2 open (awaiting checkpoint merge).
 
 ## Reference map
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — v4 source of truth (design, integrations, scope tiers).
@@ -18,7 +18,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 | PR | Linear | Title | Status | Owner | Branch | Notes |
 |----|--------|-------|--------|-------|--------|-------|
-| PR0 | VIG-5 | scaffold + frozen v4 contracts | 🟡 | Pranav/Claude | `pr00-scaffold-contracts` | types + migration + `/api/sms` stub + smoke-parse |
+| PR0 | VIG-5 | scaffold + frozen v4 contracts | 🟡 in review | Pranav/Claude | `pr00-scaffold-contracts` | **PR #2 open**, gates green; awaiting checkpoint merge. Adds `lib/types.ts` (frozen), migration, `/api/sms` stub, smoke-parse |
 | PR1 | VIG-6 | mock CDS + cellulitis protocol | 🟡 | **Charumathi** | — | clinical content; she'll add the protocol MD |
 | PR2 | VIG-7 | guardrail engine + tests | ⚪ | — | — | needs PR0 types |
 | PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | ⚪ | — | — | needs PR0 types |
@@ -50,12 +50,12 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 - **v4 pivot:** SMS-first (Twilio) · cellulitis hero · mock CDS authors the protocol per visit (frozen/cached) · mock FHIR EMR intake · escalation = ElevenLabs + Twilio **voice call** · nurse surface = mock EMR UI (dashboard + record tabs) · after-ack the agent is **silent** (no patient banner).
 - **No standalone TTS / STT / pre-gen audio / MMS voice notes** — the only voice is the Conversational-AI call.
 - **Safety invariant preserved under dynamic protocols:** CDS *authors* the flag→tier map once; the guardrail *applies* it deterministically. Model never lowers a tier, never holds the pager.
-- **Anthropic SDK** `@anthropic-ai/sdk@0.112.3`: `messages.parse` exists in stable resources; `zodOutputFormat` under `resources/beta` + `helpers/zod` (confirm exact import via smoke-parse).
+- **⚠️ zod/v4 REQUIRED for the SDK:** `@anthropic-ai/sdk@0.112.3`'s `zodOutputFormat` (from `@anthropic-ai/sdk/helpers/zod`) imports **`zod/v4`**. Any zod schema fed to `messages.parse` (agent.ts mirror, etc.) MUST `import { z } from "zod/v4"` — plain `import { z } from "zod"` fails type-check. `client.messages.parse({ …, output_config: { format: zodOutputFormat(schema) } }, { timeout, maxRetries: 0 })` confirmed working against the live API.
 - **Workflow:** real GitHub PRs, squash-merge, checkpoint before each merge; branch per ticket. STATUS.md/coordination docs go straight to `main`.
 
 ## Build log (newest first)
 ### 2026-07-18
-- **PR0 started** on `pr00-scaffold-contracts` (off main). Anthropic SDK inspected (0.112.3). Next: write `lib/types.ts`, `supabase/migrations/001_init.sql`, `/api/sms` stub, `scripts/smoke-parse.ts`; run gate; open PR.
+- **PR0 built + PR #2 opened** (awaiting checkpoint merge). Wrote `lib/types.ts` (frozen), `supabase/migrations/001_init.sql`, `app/api/sms/route.ts` (stub), `scripts/smoke-parse.ts`. Gate green: `npm run build` ✓ + live `smoke-parse` ✓. **Found: SDK needs `zod/v4`** (see decisions).
 - **Added STATUS.md** (this file) + CLAUDE.md coordination rule (direct to main).
 - **Linear rewritten to v4** (VIG-5…16 repurposed; VIG-17/18 setup added). VIG-6 assigned to Charumathi (In Progress). SMS/call tickets carry exact Twilio/ElevenLabs API specs.
 - **Docs PR #1 merged to main:** ARCHITECTURE.md, excalidraw diagram, README (v4), PLAN/CLAUDE v4 banners.
