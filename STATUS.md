@@ -5,7 +5,7 @@
 > Linear in sync. Update rules: see **CLAUDE.md → "Session coordination — STATUS.md"**. If you did something
 > meaningful and didn't record it here, you're not done.
 
-**Last updated:** 2026-07-18 — PR1+2+3 MERGED; main fully green (build + suites + 8/8 guardrail×CDS integration smoke). **PR4 is the unblocked critical path.** Twilio TF-SMS verify pending.
+**Last updated:** 2026-07-18 — PR1+2+3 merged, main green. **Escalate cadence decided: 10 min** (PR #6 open, needs Charumathi sign-off). **PR4 is the unblocked critical path.** Linear dependency graph fully wired.
 
 > **⚠️ ONE DIRECTORY = ONE SESSION.** The main clone `~/Hackathon/vigil` is the orchestrator (main). The guardrail session must work from a **separate clone** on `pr02-guardrail` (its WIP is already committed+pushed there). Do NOT run two sessions in the same folder — it shares one git HEAD and corrupts state.
 
@@ -49,6 +49,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 - **Still needed:** `TWILIO_ACCOUNT_SID` · `TWILIO_AUTH_TOKEN` · `TWILIO_NUMBER` · `ELEVENLABS_AGENT_ID` · `ELEVENLABS_AGENT_PHONE_NUMBER_ID`
 
 ## Key decisions (log)
+- **Escalate cadence = 10 min** (Pranav, resolving the 5-vs-10 discrepancy between the authored protocol and the VIG-9 spec). Fix = **PR #6** (`lib/cds.ts` one-liner, gates green) — touches Charumathi's PR1 file, so it awaits her sign-off before merge. PR4 reads cadence from `protocol.cadenceMinutes[tierFinal]` via `evaluate()`.
 - **v4 pivot:** SMS-first (Twilio) · cellulitis hero · mock CDS authors the protocol per visit (frozen/cached) · mock FHIR EMR intake · escalation = ElevenLabs + Twilio **voice call** · nurse surface = mock EMR UI (dashboard + record tabs) · after-ack the agent is **silent** (no patient banner).
 - **No standalone TTS / STT / pre-gen audio / MMS voice notes** — the only voice is the Conversational-AI call.
 - **Safety invariant preserved under dynamic protocols:** CDS *authors* the flag→tier map once; the guardrail *applies* it deterministically. Model never lowers a tier, never holds the pager.
@@ -57,6 +58,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 ## Build log (newest first)
 ### 2026-07-18
+- **Cadence decision + Linear graph wiring (guardrail-clone session):** Pranav decided **escalate cadence = 10 min**; opened **PR #6** (one-line `lib/cds.ts` fix, all gates + updated integration smoke green) — flagged for Charumathi since it's her PR1 file. Also wired the 7 missing `blockedBy` relations in Linear (VIG-10/12/13←VIG-9 · VIG-14←VIG-11+12 · VIG-15←VIG-12+13) so the board shows the true build order; decision + guidance commented on VIG-9.
 - **Health check on merged main (guardrail-clone session):** PRs #3 (agent), #4 (guardrail), #5 (CDS) all squash-merged; no open PRs. Full gate sweep on `main`: `npm run build` ✓ · `test-guardrail` 17/17 ✓ · `test-cds` ✓. **Cross-integration smoke (guardrail × real `MockCds.author("cellulitis")`) 8/8 green** — baseline red chip escalates, W_SPREAD watches, R_RAPID escalates, real hardPhrases escalate on degraded model, model-escalate-w/o-flag → watch+review_now, cadence map (30/15/5) flows through, next-question substitution + dedup work on real ids. **Nothing broken.** ⚠️ Note for PR4: VIG-9's ticket text says escalate cadence 10; the authored protocol says 5 — the guardrail reads `protocol.cadenceMinutes[tier]`, so the protocol (5) wins unless humans say otherwise. Linear synced: VIG-6 → Done, VIG-9 noted unblocked.
 - **PR #4 (guardrail) opened** from the separate `vigil-guardrail` clone — VIG-7 → In Review, **not merged** (checkpoint). `lib/guardrail.ts` is pure + protocol-agnostic (applies any `CdsProtocol`; decoupled from PR1's `lib/cds.ts`). `scripts/test-guardrail.ts` = cellulitis fixture + 17/17 PLAN §7.1 cases green; `npm run build` green. Exports for PR4/PR7: `evaluate`, `confirmedFlagsFromAnswers`, `hardPhraseHits`, `rulesTier`, `validateModel`, `validateNextQuestionId`, `parseYesNo`, `alertCategory`, `shouldPushAlert`, `maxTier`. Cadence read from `protocol.cadenceMinutes[tier]`.
 - **Setup:** Supabase SQL run ✓. Twilio funded; toll-free number has Voice but **SMS blocked pending toll-free verification** (submitted) — got a local number as backup. Vercel auto-deploy confirmed (env vars still need adding in dashboard). ElevenLabs Conv AI agent setup in progress.
