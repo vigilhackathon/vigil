@@ -68,11 +68,23 @@ export interface PlaceCallResult {
   detail?: string;
 }
 
+/**
+ * Fictional/fixture numbers (mock-FHIR seeds use +1555…, Twilio magic numbers use +1500555…)
+ * must never receive a real call attempt — tests and seeded rows would burn quota otherwise.
+ */
+function isFictionalNumber(n: string): boolean {
+  const digits = n.replace(/\D/g, "").replace(/^1/, ""); // strip formatting + US country code
+  return digits.startsWith("555") || digits.startsWith("500555");
+}
+
 /** Trigger an ElevenLabs → Twilio outbound call. No-ops (ok:false) if env or phone is missing. */
 export async function placeEscalationCall(
   toNumber: string | null,
   ctx: CallContext,
 ): Promise<PlaceCallResult> {
+  if (process.env.VOICE_CALLS === "off") {
+    return { ok: false, conversationId: null, detail: "VOICE_CALLS=off (kill switch)" };
+  }
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const agentId = process.env.ELEVENLABS_AGENT_ID;
   const phoneId = process.env.ELEVENLABS_AGENT_PHONE_NUMBER_ID;
@@ -80,6 +92,9 @@ export async function placeEscalationCall(
     return { ok: false, conversationId: null, detail: "ElevenLabs call env not configured" };
   }
   if (!toNumber) return { ok: false, conversationId: null, detail: "patient has no phone number" };
+  if (isFictionalNumber(toNumber)) {
+    return { ok: false, conversationId: null, detail: `fictional number ${toNumber} — skipping real call` };
+  }
 
   const resp = await fetch(`${EL_BASE}/v1/convai/twilio/outbound-call`, {
     method: "POST",

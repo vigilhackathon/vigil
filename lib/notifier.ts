@@ -78,6 +78,8 @@ export interface EscalationEvent {
   trend: string; // e.g. "5→6→7"
   confirmedRed: string[];
   hardPhraseHits: string[];
+  /** True when THIS turn's rules escalated on severity delta alone (no flags/phrases). */
+  deltaDriven?: boolean;
 }
 
 export interface NotifyResult {
@@ -103,7 +105,12 @@ export async function notifyEscalation(
   db: SupabaseClient,
   e: EscalationEvent,
 ): Promise<NotifyResult> {
-  const category = alertCategory(e.confirmedRed, e.hardPhraseHits);
+  // Fallback category: a Δ≥3 (or sustained-severity) escalation confirms no flag, but it still
+  // escalated the tier — the nurse must still be paged (once; dedup applies like any category).
+  // Only when THIS turn genuinely escalated on delta — a quiet turn on a sticky-escalated
+  // patient contributes nothing new and must not page (or trigger a call) again.
+  const category =
+    alertCategory(e.confirmedRed, e.hardPhraseHits) || (e.deltaDriven ? "delta-escalation" : "");
   if (!category) return { paged: false, updated: false, category };
 
   const { data, error } = await db
