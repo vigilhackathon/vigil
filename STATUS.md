@@ -36,10 +36,10 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 | SETUP | VIG-18 | ElevenLabs Conv AI agent + import number | ⚪ | Pranav | — | stretch support |
 
 ## Setup checklist
-- [ ] Supabase SQL run (patients + messages + realtime + RLS) — verify in dashboard
-- [ ] Vercel import / deployed URL live
-- [ ] Twilio: account + number (SMS+Voice) + verify both iPhones + webhook → `/api/sms` (VIG-17)
-- [ ] ElevenLabs: Conv AI agent + import Twilio number (VIG-18)
+- [x] Supabase SQL run (patients + messages + realtime + RLS) ✓
+- [x] Vercel auto-deploy wired (14 deploys) — ⚠️ add env vars in Vercel dashboard (only in local .env.local so far)
+- [~] Twilio: account ✓ + funds ✓. Toll-free `+18559214240` (Voice ✓, **SMS pending toll-free verification**) + a local number acquired. Webhook not wired.
+- [~] ElevenLabs: Conv AI agent + import Twilio number (VIG-18) — in progress
 - [x] Anthropic key in `.env.local`
 - [x] ElevenLabs key + voice id in `.env.local`
 - [x] Supabase URL + anon + service-role keys in `.env.local`
@@ -58,6 +58,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 ## Build log (newest first)
 ### 2026-07-18
 - **PR #4 (guardrail) opened** from the separate `vigil-guardrail` clone — VIG-7 → In Review, **not merged** (checkpoint). `lib/guardrail.ts` is pure + protocol-agnostic (applies any `CdsProtocol`; decoupled from PR1's `lib/cds.ts`). `scripts/test-guardrail.ts` = cellulitis fixture + 17/17 PLAN §7.1 cases green; `npm run build` green. Exports for PR4/PR7: `evaluate`, `confirmedFlagsFromAnswers`, `hardPhraseHits`, `rulesTier`, `validateModel`, `validateNextQuestionId`, `parseYesNo`, `alertCategory`, `shouldPushAlert`, `maxTier`. Cadence read from `protocol.cadenceMinutes[tier]`.
+- **Setup:** Supabase SQL run ✓. Twilio funded; toll-free number has Voice but **SMS blocked pending toll-free verification** (submitted) — got a local number as backup. Vercel auto-deploy confirmed (env vars still need adding in dashboard). ElevenLabs Conv AI agent setup in progress.
 - **PR #3 (agent.ts) opened** by the subagent — build green, mergeable, **not merged** (awaiting checkpoint). Notable: `confidence` unbounded in zod; history folded into one user message.
 - **Deconflicted the shared working tree:** the guardrail session was coding in the SAME directory. Committed its WIP to `pr02-guardrail` + pushed; returned this dir to `main`. Guardrail must continue from a **separate clone**.
 - **Setup progress:** Twilio Account SID + Auth Token added to `.env.local` (phone number pending). Supabase SQL **not yet run**. Vercel: assumed auto-deploy (verifying).
