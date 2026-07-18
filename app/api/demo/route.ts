@@ -6,9 +6,23 @@ import { processCheckin } from "@/lib/checkin-service";
 import { MockCds } from "@/lib/cds";
 import { DEMO_PATIENTS, DEMO_SEED_ROWS, beatFor } from "@/lib/scripts";
 import { supabaseServer } from "@/lib/supabase-server";
-import type { ApiError, CheckinTrace } from "@/lib/types";
+import type { ApiError, CdsProtocol, CheckinTrace } from "@/lib/types";
 
 export const maxDuration = 30;
+
+/**
+ * Author a monitoring protocol for a complaint, or null for display-only patients.
+ * MockCds only authors cellulitis (and throws otherwise); the non-cellulitis demo-board
+ * patients are display-only, so they get no protocol (the column is nullable). This guard
+ * keeps reset from throwing on their varied complaints (low back pain, abdominal pain, fever).
+ */
+function authorProtocol(complaint: string): CdsProtocol | null {
+  try {
+    return MockCds.author(complaint);
+  } catch {
+    return null;
+  }
+}
 
 const BodySchema = z.discriminatedUnion("action", [
   z.object({
@@ -56,10 +70,12 @@ export async function POST(req: Request): Promise<Response> {
           phone: p.slug === "chen" ? (body.heroPhone ?? p.phone) : p.phone,
           complaint: p.complaint,
           esi: p.esi,
+          triage_note: p.triage_note,
+          vitals: p.vitals,
           is_demo_seed: true,
           // Protocol frozen up front + thread identity pre-confirmed: the phone opens straight
-          // into the conversation; beat 0 IS the baseline.
-          protocol: MockCds.author(p.complaint),
+          // into the conversation; beat 0 IS the baseline. (Driven patients are cellulitis.)
+          protocol: authorProtocol(p.complaint),
           baseline: { complete: false, answers: { __dob_confirmed: "yes" }, severityBaseline: 0 },
         })
         .select("id")
@@ -77,7 +93,8 @@ export async function POST(req: Request): Promise<Response> {
     for (const s of DEMO_SEED_ROWS) {
       const { data } = await db
         .from("patients")
-        .insert({ ...s, is_demo_seed: true, protocol: MockCds.author(s.complaint) })
+        // Display-only rows: varied complaints, no monitoring protocol (guarded → null).
+        .insert({ ...s, is_demo_seed: true, protocol: authorProtocol(s.complaint) })
         .select("id")
         .single();
       if (data) seedIds.push(data.id as string);

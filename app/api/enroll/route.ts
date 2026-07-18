@@ -63,6 +63,8 @@ export async function POST(req: Request): Promise<Response> {
       phone: fhir.phone ?? null,
       complaint: fhir.complaint,
       esi: fhir.esi,
+      // Display-only intake enrichment: surface the EMR triage note on the patient chart.
+      triage_note: fhir.triageNote,
       channel: "sms",
       protocol,
       baseline,
