@@ -74,9 +74,14 @@ export async function POST(req: Request): Promise<Response> {
           vitals: p.vitals,
           is_demo_seed: true,
           // Protocol frozen up front + thread identity pre-confirmed: the phone opens straight
-          // into the conversation; beat 0 IS the baseline. (Driven patients are cellulitis.)
+          // Baseline pre-complete (triage already did intake) + identity pre-confirmed, so
+          // opening the thread jumps straight into the interval check-in screen.
           protocol: authorProtocol(p.complaint),
-          baseline: { complete: false, answers: { __dob_confirmed: "yes" }, severityBaseline: 0 },
+          baseline: {
+            complete: true,
+            answers: { __dob_confirmed: "yes", b_pain: 5, b_landmark: "knee", b_screen: ["none"] },
+            severityBaseline: 5,
+          },
         })
         .select("id")
         .single();
