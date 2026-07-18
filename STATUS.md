@@ -5,7 +5,9 @@
 > Linear in sync. Update rules: see **CLAUDE.md → "Session coordination — STATUS.md"**. If you did something
 > meaningful and didn't record it here, you're not done.
 
-**Last updated:** 2026-07-18 — PR0 merged. PR2 (colleague) + PR3 (subagent) in flight; Twilio/ElevenLabs setup next.
+**Last updated:** 2026-07-18 — PR3 up for review (#3). Shared tree deconflicted (guardrail → separate clone). Twilio/Supabase setup in progress.
+
+> **⚠️ ONE DIRECTORY = ONE SESSION.** The main clone `~/Hackathon/vigil` is the orchestrator (main). The guardrail session must work from a **separate clone** on `pr02-guardrail` (its WIP is already committed+pushed there). Do NOT run two sessions in the same folder — it shares one git HEAD and corrupts state.
 
 ## Reference map
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — v4 source of truth (design, integrations, scope tiers).
@@ -20,8 +22,8 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 |----|--------|-------|--------|-------|--------|-------|
 | PR0 | VIG-5 | scaffold + frozen v4 contracts | ✅ merged | Pranav/Claude | merged (PR #2) | `lib/types.ts` frozen, migration, `/api/sms` stub, smoke-parse. **zod/v4 required for SDK.** |
 | PR1 | VIG-6 | mock CDS + cellulitis protocol | 🟡 | **Charumathi** | — | clinical content; she'll add the protocol MD |
-| PR2 | VIG-7 | guardrail engine + tests | 🟡 | colleague | — | in progress |
-| PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | 🟡 | Claude subagent | `pr03-agent` | in progress (background subagent) |
+| PR2 | VIG-7 | guardrail engine + tests | 🟡 | colleague | `pr02-guardrail` | WIP pushed; **continue in a SEPARATE clone** (deconflicted) |
+| PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | 🟡 in review | Claude subagent | `pr03-agent` | **PR #3 open**, build green, mergeable; awaiting checkpoint |
 | PR4 | VIG-9 | checkin-service (brain) + supabase-server | ⚪ | — | — | needs PR1,2,3 |
 | PR5 | VIG-10 | mock FHIR EMR + enroll + routes + smoke-api | ⚪ | — | — | needs PR4 |
 | PR6 | VIG-11 | Twilio SMS channel | ⚪ | — | — | ⛔ needs VIG-17 + PR4 |
@@ -55,6 +57,9 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 ## Build log (newest first)
 ### 2026-07-18
+- **PR #3 (agent.ts) opened** by the subagent — build green, mergeable, **not merged** (awaiting checkpoint). Notable: `confidence` unbounded in zod; history folded into one user message.
+- **Deconflicted the shared working tree:** the guardrail session was coding in the SAME directory. Committed its WIP to `pr02-guardrail` + pushed; returned this dir to `main`. Guardrail must continue from a **separate clone**.
+- **Setup progress:** Twilio Account SID + Auth Token added to `.env.local` (phone number pending). Supabase SQL **not yet run**. Vercel: assumed auto-deploy (verifying).
 - **PR0 merged to main (PR #2).** VIG-5 → Done. Dispatched a background subagent for **PR3** (`lib/agent.ts`, branch `pr03-agent`) — opens its own PR, no merge. **PR2** (guardrail) in progress by a colleague. **PR1** (CDS/cellulitis) with Charumathi. Next: Twilio (VIG-17) + ElevenLabs (VIG-18) account setup with Pranav.
 - **PR0 built + PR #2 opened** (awaiting checkpoint merge). Wrote `lib/types.ts` (frozen), `supabase/migrations/001_init.sql`, `app/api/sms/route.ts` (stub), `scripts/smoke-parse.ts`. Gate green: `npm run build` ✓ + live `smoke-parse` ✓. **Found: SDK needs `zod/v4`** (see decisions).
 - **Added STATUS.md** (this file) + CLAUDE.md coordination rule (direct to main).
