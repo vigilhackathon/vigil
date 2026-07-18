@@ -31,6 +31,12 @@ delta-anchored severity, structured-confirmation-only escalation, the parse-fail
 escalate-sticky + stable-cycle hysteresis, same-reason dedup, the frozen alert payload, "the model never
 holds the pager."
 
+**Demo-channel note (v4.1):** real carrier SMS is blocked on Twilio A2P / toll-free verification, so for the
+demo the patient "text" conversation is **mocked as an in-app web thread** (server-state-driven, opened via
+QR, driver-injected beats) — and the **ElevenLabs voice call is the live external channel** (Twilio Voice,
+no A2P needed). The outbound channel is a config value (`mock-web` | `sms` | `whatsapp`), so real SMS is a
+one-flag switch once A2P clears (roadmap). Escalation-call wow no longer depends on carrier delivery.
+
 ## The safety invariant under dynamic protocols (the key idea)
 
 Dynamic, CDS-authored protocols do **not** weaken the floor, because authoring and enforcement are split:

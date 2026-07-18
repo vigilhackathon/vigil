@@ -26,19 +26,19 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 | PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | ✅ merged | Claude subagent | merged (PR #3) | `lib/agent.ts` invariant-compliant (zod/v4, sonnet-5, no temp, 8s/0-retry funnel) |
 | PR4 | VIG-9 | checkin-service (brain) + supabase-server | 🟡 in review | Claude (guardrail clone) | `pr04-checkin-service` | **PR #7 open.** Live smoke 15/15 (real Supabase + Claude): baseline accumulation → watch → escalate, sticky escalate on hard-phrase SMS, invariant 5 held vs live model |
 | PR5 | VIG-10 | mock FHIR EMR + enroll + routes + smoke-api | 🟡 | orchestrator session | — | **start fixture-first NOW** (`lib/emr.ts` + smoke-api skeleton are PR4-independent); wire routes when PR4 lands |
-| PR6 | VIG-11 | Twilio SMS channel | ⚪ | — | — | ⛔ needs VIG-17 + PR4 |
+| PR6 | VIG-11 | Patient text channel (MOCK web thread) + enroll UI | ⚪ | — | — | needs PR4; real SMS = roadmap (A2P blocked) |
 | PR7 | VIG-12 | Notifier + nurse paging | ⚪ | — | — | needs PR4 |
 | PR8 | VIG-13 | Handoff/SBAR + transcript | ⚪ | — | — | needs PR4 |
 | PR9 | VIG-14 | Demo driver + cellulitis scripts | ⚪ | — | — | needs PR6,7 |
 | PR10 | VIG-15 | Mock EMR UI (dashboard + record tabs) | 🟡 | **Charumathi** | — | **start fixture-first NOW** against frozen types; swap to real APIs when PR5/7/8 land |
-| PR11 | VIG-16 | [STRETCH] Escalation voice call | ⚪ | — | — | ⛔ needs VIG-18 + PR6 |
+| PR11 | VIG-16 | Escalation voice call (ElevenLabs) [REQUIRED — live channel] | ⚪ | — | — | needs VIG-18 + PR4; Twilio Voice works now |
 | SETUP | VIG-17 | Twilio account/number/verify/webhook | ⚪ | Pranav | — | **before lunch** |
 | SETUP | VIG-18 | ElevenLabs Conv AI agent + import number | ⚪ | Pranav | — | stretch support |
 
 ## Setup checklist
 - [x] Supabase SQL run (patients + messages + realtime + RLS) ✓
 - [x] Vercel auto-deploy wired (14 deploys) — ⚠️ add env vars in Vercel dashboard (only in local .env.local so far)
-- [~] Twilio: account ✓ + funds ✓. Toll-free `+18559214240` (Voice ✓, **SMS pending toll-free verification**) + a local number acquired. Webhook not wired.
+- [~] Twilio: account ✓ + funds ✓. Toll-free `+18559214240` **Voice ✓ = the demo number** (SMS dropped from critical path — A2P too slow; text is mocked in-app). Import into ElevenLabs next.
 - [~] ElevenLabs: Conv AI agent + import Twilio number (VIG-18) — in progress
 - [x] Anthropic key in `.env.local`
 - [x] ElevenLabs key + voice id in `.env.local`
@@ -51,6 +51,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 ## Key decisions (log)
 - **⚠️ `.env.local` gotcha:** `NEXT_PUBLIC_SUPABASE_URL` was pasted WITH a trailing `/rest/v1/` — supabase-js needs the bare project URL. `lib/supabase-server.ts` normalizes it defensively; **Session B's `lib/supabase-browser.ts` must normalize too (or fix the env value + Vercel copy).**
 - **Escalate cadence = 10 min** (Pranav, resolving the 5-vs-10 discrepancy between the authored protocol and the VIG-9 spec). Fix = **PR #6** (`lib/cds.ts` one-liner, gates green) — touches Charumathi's PR1 file, so it awaits her sign-off before merge. PR4 reads cadence from `protocol.cadenceMinutes[tierFinal]` via `evaluate()`.
+- **⚠️ DEMO CHANNEL PIVOT (SMS blocked on A2P):** patient "text" is **MOCKED as an in-app web thread** (server-state-driven, QR-opened, driver-injected beats); the **real ElevenLabs voice call is the live external channel** (Twilio Voice, no A2P). Twilio = Voice-only for demo. Channel kept as config (`mock-web`|`sms`|`whatsapp`) to flip later. Tickets: VIG-11 (mock thread), VIG-16 (call → REQUIRED), VIG-17 (Voice-only).
 - **v4 pivot:** SMS-first (Twilio) · cellulitis hero · mock CDS authors the protocol per visit (frozen/cached) · mock FHIR EMR intake · escalation = ElevenLabs + Twilio **voice call** · nurse surface = mock EMR UI (dashboard + record tabs) · after-ack the agent is **silent** (no patient banner).
 - **No standalone TTS / STT / pre-gen audio / MMS voice notes** — the only voice is the Conversational-AI call.
 - **Safety invariant preserved under dynamic protocols:** CDS *authors* the flag→tier map once; the guardrail *applies* it deterministically. Model never lowers a tier, never holds the pager.
@@ -59,6 +60,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 ## Build log (newest first)
 ### 2026-07-18
+- **DEMO CHANNEL PIVOT (Pranav):** real SMS blocked on A2P/toll-free verification → **text mocked as an in-app web thread**; **ElevenLabs voice call promoted to the REQUIRED live channel** (Twilio Voice works now). Updated VIG-11 (mock web thread), VIG-16 (required), VIG-17 (Voice-only) + ARCHITECTURE. The escalation-call "wow" no longer depends on carrier SMS.
 - **PR4 built → PR #7 open (guardrail-clone session).** `lib/checkin-service.ts` (`processCheckin` — baseline accumulation, protocol freeze via MockCds, deterministic SMS→answer mapping, model funnel, guardrail floor, cadence 30/15/10, one agent row per question w/ CheckinTrace) + `lib/supabase-server.ts` (server-only boundary). **Verified live:** 15/15 smoke vs real Supabase + real Claude — incl. a live-model turn where cited-but-unconfirmed flags were discarded (invariant 5). Found + fixed: severityHistory double-seeded baseline; found: env URL gotcha (see decisions). Gates green. Once #7 merges: PR5 routes wire up, PR7 notifier + PR8 handoff unblock.
 - **PR #6 merged (cadence 30/15/10) + WORK SPLIT assigned** (3 sessions + Pranav-on-Twilio): guardrail-clone session → **VIG-9/PR4** (In Progress, branch `pr04-checkin-service`) · orchestrator session → **VIG-10/PR5 fixture-first** (`lib/emr.ts` + smoke-api skeleton now; routes when PR4 lands — guidance commented on the ticket) · Charumathi → **VIG-15/PR10 fixture-first** (guidance commented). Next picks after PR4: VIG-12 (notifier), VIG-13 (handoff); VIG-11 (SMS) when Twilio verify clears.
 - **Cadence decision + Linear graph wiring (guardrail-clone session):** Pranav decided **escalate cadence = 10 min**; opened **PR #6** (one-line `lib/cds.ts` fix, all gates + updated integration smoke green) — flagged for Charumathi since it's her PR1 file. Also wired the 7 missing `blockedBy` relations in Linear (VIG-10/12/13←VIG-9 · VIG-14←VIG-11+12 · VIG-15←VIG-12+13) so the board shows the true build order; decision + guidance commented on VIG-9.
