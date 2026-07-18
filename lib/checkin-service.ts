@@ -109,13 +109,21 @@ function mapReplyToAnswer(
 
   if (q.kind === "chips") {
     const values = new Set(q.options.map((o) => o.value));
-    // Exact option value typed back (chip tap surfaces, demo driver).
     const trimmed = body.trim().toLowerCase();
+    // Exact option value typed back (demo driver / power users).
     if (values.has(trimmed)) return { [q.id]: trimmed };
-    // Deterministic yes/no confirmation parse (SMS "Yes." / "nope" / voice transcript).
+    // Deterministic yes/no confirmation parse (real SMS: "Yes." / "nope" / voice transcript).
     if (values.has("yes") && values.has("no")) {
       const yn = parseYesNo(body);
       if (yn) return { [q.id]: yn };
+    }
+    // Natural-text label match (real SMS: "up to the knee" → the matching chip option).
+    if (trimmed) {
+      const hit = q.options.find((o) => {
+        const lbl = o.label.toLowerCase();
+        return lbl === trimmed || lbl.includes(trimmed) || trimmed.includes(lbl);
+      });
+      if (hit) return { [q.id]: hit.value };
     }
   }
 
@@ -154,10 +162,10 @@ function questionById(protocol: CdsProtocol, id: string | null): Question | null
 // Deterministic patient acks. Never diagnose, never reassure ("you're fine" banned), never
 // claim a nurse was notified (invariant 8). "Always call first": a concerning text answer is
 // NOT met with a "go to the front desk" instruction — the care team calls to verify.
-const ACK_CALLING =
-  "Thanks for telling me. The care team is going to give you a quick call in the next few minutes to check in — please keep your phone nearby.";
-const ACK_ROUTINE = "Thanks, I've noted that. I'll check in with you again a little later.";
-const ACK_POST_CALL = "Thanks for talking with me just now — please keep your phone nearby.";
+// Kept SMS-short (real texts). No "front desk"; call-first announces the call.
+const ACK_CALLING = "Thanks — a nurse will call you shortly to check in.";
+const ACK_ROUTINE = "Got it, thanks.";
+const ACK_POST_CALL = "Thanks for talking just now.";
 
 /**
  * Severity trajectory incl. baseline, without double-counting the baseline reading (the
@@ -351,9 +359,7 @@ export async function processCheckin(
   // 11. Patient ack. Scripted wording wins; a call-triggering turn gets a deterministic ack
   //     (guarantees no "front desk", always announces the call); otherwise model / neutral copy.
   const kickoffAck =
-    history.length === 0
-      ? "Thanks for confirming — a few quick questions while you wait."
-      : "Just checking in.";
+    history.length === 0 ? "Hi — a couple quick questions while you wait." : "Checking in.";
   let patientAck: string;
   if (opts.scripted) {
     patientAck = opts.scripted.patientAck;
