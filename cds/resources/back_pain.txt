@@ -1,0 +1,145 @@
+BACK PAIN — ED NURSING ASSESSMENT
+
+IMMEDIATE TRIAGE PRIORITIES (FIRST 60 SECONDS)
+
+ESI-1 / Call physician NOW if any:
+- Hemodynamic instability (hypotension, tachycardia, diaphoresis, pallor) + back/flank pain ->
+  ruptured AAA until proven otherwise — do NOT delay for CT if unstable.
+- Acute paraplegia or rapidly progressive bilateral lower extremity weakness.
+- New urinary retention or fecal incontinence + back pain -> Cauda Equina Syndrome (CES) —
+  surgical emergency; every hour counts.
+- Saddle anesthesia (numbness of perineum, inner thighs, genitalia).
+- Fever + back pain + IV drug use or immunocompromise -> Spinal Epidural Abscess until excluded.
+- Thoracic back pain + tearing/ripping quality + hypertension -> aortic dissection.
+
+ESI-2 / Urgent evaluation within 10 minutes:
+- Back pain + fever without obvious alternative source.
+- Known malignancy + new or worsening back pain.
+- Back pain + bilateral leg symptoms (radiculopathy or weakness).
+- Immunocompromised patient with any back pain.
+- Recent spinal procedure/surgery + back pain + fever.
+- Elderly + thoracic back pain (highest risk region for fracture and malignancy).
+
+OMINOUS SIGNS — MUST NOT MISS (ranked by consequence)
+- Hemodynamic instability + back/abdominal/flank pain -> Ruptured AAA (mortality >80% without
+  emergent surgery). Resus + immediate surgical consult; POCUS if stable.
+- Saddle anesthesia (LR+ 11.0) -> CES. Emergency MRI within 1-4h; neurosurgical consult.
+- Acute urinary retention (LR+ 6.4) -> CES ("white flag" — potentially irreversible
+  compression). Emergency MRI; catheterize and measure PVR.
+- New fecal incontinence or loss of anal tone (LR+ 6.3) -> CES (late, ominous). Emergency MRI +
+  neurosurgical consult.
+- Bilateral lower extremity weakness or progressive neurologic deficit -> CES / MSCC / epidural
+  hematoma or abscess. Emergency MRI whole spine.
+- Fever + back pain (LR+ 68.8 — highest LR of any red flag) -> Spinal epidural abscess /
+  spondylodiscitis. IV access, blood cultures, CRP/ESR, urgent MRI.
+- IV drug use + back pain (LR+ 6.9) -> Spinal epidural abscess (classic triad fever + back pain
+  + neuro deficit present in <33%).
+- Known/suspected malignancy + back pain -> Metastatic spinal cord compression (MSCC;
+  post-test probability 33% in ED). Urgent whole-spine MRI.
+- Thoracic (mid-back) pain -> fracture, malignancy, aortic pathology; lower threshold for
+  imaging and escalation.
+- Night pain waking from sleep + progressive pain -> malignancy/infection ("mechanical" pain
+  typically eases with rest).
+- Unexplained weight loss + back pain (LR+ 9.2) -> malignancy/infection.
+- Known osteoporosis/steroid use + sudden thoracolumbar pain after minimal trauma -> vertebral
+  compression fracture.
+- Flank pain radiating to groin + hematuria -> urolithiasis (but always consider AAA in >50yo).
+- Band-like pain around trunk + leg "heaviness" + cancer history -> MSCC.
+
+CRITICAL POINT: RED FLAGS ARE UNRELIABLE IN ISOLATION
+In a review of 9,940 back pain patients, 64% with confirmed spinal malignancy had NO associated
+red flags; absence of red flags does NOT meaningfully lower the probability of serious
+pathology. Conversely, 69% of ED back pain patients have at least one red flag, yet only ~3.3%
+have serious spinal pathology — most red flags are highly non-specific in isolation. Use red
+flags with clinical context and host risk factors; their absence does not rule out serious
+disease.
+
+THE FOUR PRIORITY SERIOUS SPINAL DIAGNOSES
+
+1) Cauda Equina Syndrome (CES) — 0.1-1.9% of ED back pain.
+Ask every back pain patient: any change in bladder function (difficulty initiating, reduced
+sensation of filling, incontinence or retention); any change in bowel function; any
+numbness/tingling in the saddle region (perineum, inner thighs, genitalia, buttocks); bilateral
+leg pain or weakness (new or worsening); any change in sexual function.
+Nursing action: measure post-void residual (PVR) by bladder scan — PVR >400 mL supports CES.
+Catheterize if retention. Document exact time of onset of neurological symptoms — timing of
+decompression affects outcomes. MRI whole lumbar spine is gold standard.
+
+2) Spinal Epidural Abscess (SEA) — mortality up to 3%; classic triad present in <33%.
+Risk factors (ask every patient): IV drug use; indwelling vascular catheter / recent invasive
+or spinal procedure; immunosuppression (HIV, transplant, chemo, diabetes, chronic steroids);
+active infection elsewhere; recent epidural analgesia.
+Key symptoms: localized spinal tenderness (most common early); fever present in only ~30%;
+radiculopathy; progressive weakness.
+Nursing action: CRP/ESR + CBC + blood cultures (two sets before antibiotics) in any febrile back
+pain patient with risk factors. MRI with gadolinium is gold standard.
+
+3) Spinal Malignancy / Metastatic Spinal Cord Compression (MSCC) — 0.1-2.1% of ED back pain.
+Most common primaries: breast, prostate, lung, kidney, thyroid ("BPLuKT"). Key features: past
+history of cancer (highest LR; post-test probability 33%); age >50 with first episode; unexplained
+weight loss (LR+ 9.2); pain worse lying flat or at night; band-like thoracic pain, progressive
+bilateral leg symptoms, gait disturbance, or new bladder/bowel dysfunction; myeloma
+(persistent bone pain >=60 years). Imaging: whole-spine MRI (sensory level does not correspond to
+level of metastasis).
+
+4) Spinal Fracture — 6.5% of ED back pain (highest of the serious pathologies); up to 70% of
+vertebral fractures undiagnosed on initial assessment.
+Risk factors: osteoporosis (esp. postmenopausal women); long-term corticosteroids; high-force
+trauma at any age; minor trauma in elderly (>65 female, >75 male); prior fragility fractures;
+alcohol >3 units/day; vitamin D deficiency; RA. Clinical picture: sudden thoracolumbar pain
+after minimal trauma (lifting, bending, coughing); worst with weight-bearing; percussion
+tenderness (absence does NOT exclude). Imaging: X-ray first; MRI if neuro deficit or
+pathological fracture suspected.
+
+DON'T MISS — NON-SPINAL CAUSES (14.6-58.3% of ED back pain in Australian studies; up to 45.6%
+of "back pain" visits are NOT lumbar spine)
+- Ruptured/expanding AAA: epigastric/flank/back pain + hemodynamic instability; pulsatile mass.
+  Any instability = POCUS + surgical NOW.
+- Aortic dissection: tearing/ripping chest-to-back pain; BP differential between arms;
+  hypertension. Immediate CT angio.
+- Renal colic / pyelonephritis: flank -> groin radiation; hematuria; CVA tenderness; fever
+  (pyelo). Rule out AAA in >50yo first.
+- Pancreatitis: epigastric -> back radiation; post-alcohol/fatty meal.
+- Retroperitoneal hematoma/abscess: anticoagulated patient; flank pain; recent procedure.
+- Referred pain from GI: posterior penetrating ulcer, bowel obstruction.
+
+STRUCTURED NURSING ASSESSMENT (OPQRST)
+- Onset: sudden = fracture, AAA, disc herniation; gradual = malignancy, infection, inflammatory.
+- Location: thoracic = highest risk region for serious pathology; lumbar = most common (mostly
+  mechanical but also CES, SEA, malignancy); flank/CVA = pyelonephritis, urolithiasis, AAA in
+  >50yo; sacral = CES, pelvic pathology.
+- Quality: mechanical = better with rest; inflammatory = worse with rest/at night; colicky =
+  visceral; constant/progressive = infection/malignancy.
+- Radiation: leg (radiculopathy); groin (urolithiasis); around trunk/band-like (MSCC).
+- Worse lying flat -> malignancy; worse with activity/better with rest -> mechanical.
+- Neurological symptoms: ALWAYS ask explicitly about bladder, bowel, saddle sensation, leg
+  weakness.
+
+High-risk history: prior malignancy (breast, prostate, lung, kidney, thyroid, myeloma); IV drug
+use or recent invasive procedure; immunocompromise; osteoporosis/steroid use/prior fragility
+fractures; recent spinal surgery or epidural catheter; TB exposure; pregnancy (ectopic,
+abruption, preterm labor); anticoagulation (epidural hematoma); endovascular history (AAA
+repair/graft — infection, fistula, graft failure).
+
+NURSING-INITIATED ACTIONS (before physician assessment)
+1. Full vitals including HR, BP bilaterally, SpO2 — instability = AAA/dissection until excluded.
+2. Two large-bore IVs + fluids if unstable.
+3. Bedside POCUS if trained — AAA excluded in <2 min.
+4. Bladder scan (PVR) if any urinary symptoms, bilateral leg symptoms, or saddle numbness — CES
+   triage.
+5. Neurological assessment documentation: bilateral leg strength, sensation, reflexes.
+6. UA + urine culture.
+7. Blood draw per protocol: CBC, CMP, CRP/ESR, blood cultures (if fever/SEA risk).
+8. NPO if surgical emergency suspected.
+9. Analgesia — do NOT withhold (does not mask diagnosis).
+10. Serial neuro reassessments — document changes explicitly; progressive deficit = surgical
+    emergency.
+
+IMAGING
+- Suspected CES -> MRI lumbar spine (emergent, within 1-4h); CT only if MRI contraindicated.
+- Suspected MSCC -> MRI whole spine (sensory level does not correlate with level of metastasis).
+- Suspected SEA -> MRI with gadolinium.
+- Suspected vertebral fracture -> X-ray first; CT or MRI if neuro deficit.
+- Suspected AAA -> POCUS if unstable -> CT angio if stable (do NOT delay OR for CT if unstable).
+- Suspected aortic dissection -> CT angiography chest/abdomen/pelvis.
+- Uncomplicated mechanical LBP -> no imaging (imaging without red flags is guideline-discordant).

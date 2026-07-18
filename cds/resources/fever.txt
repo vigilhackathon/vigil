@@ -1,0 +1,92 @@
+FEVER — ED NURSING APPROACH (what you need to know on arrival)
+
+Treat fever as a symptom; triage is driven by physiology and risk group, not the thermometer.
+
+1) FIRST 60 SECONDS: TRIAGE PRIORITIES
+
+Immediate / ESI-1 escalation (call clinician now, move to resus) if:
+- Shock/perfusion abnormality: SBP <90 mmHg (adult) or age-inappropriate hypotension, cap
+  refill >2 s, mottled/ashen appearance, cyanosis, oliguria.
+- Respiratory compromise: SpO2 <95% (children as a warning threshold) or clinically
+  significant hypoxia/respiratory distress.
+- Neuro compromise: new confusion/AMS, decreased consciousness, seizure, neck
+  stiffness/meningeal irritation.
+- Non-blanching petechial/purpuric rash (meningococcemia/DIC until proven otherwise).
+- Hyperthermia syndromes: core temp >40 C + CNS abnormality = heat stroke -> active cooling
+  priority over antipyretics.
+
+High-risk groups (default to higher acuity, lower threshold to escalate):
+- Infants <3 months (especially <28 days; fever may be absent after antipyretics; serious
+  infection can be clinically subtle).
+- Immunocompromised/oncology (including CAR-T/bispecific therapy): fever triggers cultures and
+  empiric antibiotics per treating-team protocols.
+- Pregnant/postpartum with suspected infection (fever absence does not exclude sepsis).
+
+2) OMINOUS FEVER PATTERNS & RED FLAGS (ranked)
+- Fever (or hypothermia) + shock physiology (hypotension, cap refill >2 s, mottling/ashen,
+  cyanosis) -> presume sepsis until proven otherwise.
+- Fever + altered mental status/decreased consciousness -> meningitis/encephalitis/sepsis/
+  toxic-metabolic; urgent evaluation.
+- Fever + non-blanching rash (petechiae/purpura) -> meningococcal disease/DIC; immediate
+  escalation.
+- Fever + meningeal irritation or seizure -> do not wait for the "classic triad" (present in
+  <50% of adult bacterial meningitis).
+- Fever in infant <3 months (>=38 C) -> high-risk; serious bacterial infection can look "well."
+- Very high fever (>=40 C) in children is a red-flag feature in serious-infection rules.
+- Hypothermia (<35-36 C) with infectious concern is high-risk (sepsis in elderly/
+  immunocompromised).
+
+3) CORE NURSING ASSESSMENT (obtain/document up front)
+Vitals & reassessment: full set including core temperature, SpO2, RR, HR, BP; trend vitals and
+perfusion markers; reassess more frequently for higher-risk patients and on deterioration.
+Focused history that changes triage: time course (onset, duration, rigors); antipyretics in
+last 4-6h (masking fever does not lower risk, esp. infants); localizing symptoms (respiratory,
+urinary, abdominal, skin/soft tissue, neuro); exposures (sick contacts, travel — consider
+dengue: warning signs include persistent vomiting, lethargy/restlessness, mucosal bleeding,
+postural hypotension); comorbidities/immune status; infant age band (8-21d, 22-28d, 29-60d)
+drives the pathway.
+Exam elements to flag immediately: perfusion (cap refill, mottling/ashen, cyanosis); work of
+breathing and SpO2; neuro (AVPU/GCS, irritability/lethargy, seizures); skin (petechiae/purpura;
+cellulitis source); hydration/urine output (oliguria is a shock sign).
+
+4) WHEN TO ESCALATE THE WORKUP (nursing-driven triggers)
+Adults (>=16): if vitals/appearance suggest sepsis risk, escalate for NEWS2-based assessment
+and repeat evaluation; mottled/ashen, non-blanching rash, or cyanosis can upgrade risk beyond
+the NEWS2 score.
+Pediatric serious-infection red flags: cyanosis, poor peripheral circulation, rapid breathing,
+crackles, diminished breath sounds, meningeal signs, petechial rash, decreased consciousness,
+seizures, and clinician/parental concern that something is wrong.
+
+5) INITIAL TESTING TO ANTICIPATE (often protocol-startable)
+Adults (undifferentiated febrile illness): if concern for sepsis, expect blood cultures,
+lactate, CBC/CMP, UA/urine culture, CXR or source-directed imaging; start IV access and fluids
+per local sepsis pathway. Antibiotic timing by risk: high risk <=1h, moderate <=3h, low <=6h.
+Children 2 months-2 years (well-appearing): no clinical feature reliably excludes UTI — consider
+UA and urine culture. CXR only for cough/hypoxia/rales/high fever >=39 C/fever >48h or
+tachycardia/tachypnea out of proportion.
+Febrile infants 8-60 days (well-appearing, term): 8-21 days -> urine + blood culture + CSF +
+parenteral antibiotics + admission; 22-28 days -> blood culture + inflammatory markers, CSF if
+any abnormal; 29-60 days -> blood culture + UA + IMs, CSF may be omitted if all IMs normal.
+Abnormal IM thresholds: Temp >38.5 C, PCT >0.5 ng/mL, CRP >20 mg/L, ANC >4000-5200/mm3.
+Procalcitonin outperforms CRP for invasive bacterial infection in young infants.
+
+6) TIME-CRITICAL FEVER SYNDROMES — MUST NOT MISS
+- Sepsis/meningococcemia: fever or hypothermia + perfusion abnormalities or non-blanching rash.
+- Bacterial meningitis/meningococcal sepsis: classic triad uncommon (<50%); escalate on AMS,
+  seizures, meningeal signs, petechiae/purpura, or clinician/family concern.
+- Heat stroke: core temp >40 C + CNS abnormalities; start active cooling immediately; do not
+  rely on acetaminophen/NSAIDs.
+- MIS-C (peds): persistent fever + inflammation + single/multiorgan dysfunction/shock after
+  SARS-CoV-2 exposure (diagnosis of exclusion).
+
+"ESCALATE NOW" TRIGGERS (febrile patient)
+- Hypotension / signs of shock, cap refill >2 s, mottled/ashen/cyanotic -> high-risk
+  sepsis/shock.
+- Non-blanching petechial/purpuric rash -> meningococcemia/DIC until excluded.
+- AMS/decreased consciousness or seizure -> meningitis/encephalitis/sepsis.
+- Infant <3 months with fever >=38 C -> SBI risk even if "well."
+- Core temp >40 C + CNS symptoms -> heat stroke; start active cooling.
+
+BOTTOM LINE: Physiology and risk group beat the thermometer. Red flags (shock signs, AMS,
+non-blanching rash, meningeal signs/seizures, very young age, immunocompromise) should trigger
+immediate escalation and sepsis/time-critical pathways.

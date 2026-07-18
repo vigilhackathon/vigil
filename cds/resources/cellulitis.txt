@@ -1,0 +1,131 @@
+OVERVIEW OF CELLULITIS
+
+Definition & Pathophysiology
+Cellulitis is a bacterial infection of the deep dermis and subcutaneous tissue, presenting
+as diffuse, poorly demarcated (vs. sharp margins of erysipelas) expanding erythema, warmth,
+tenderness, and edema — typically non-purulent. Erysipelas involves only the upper dermis
+with sharp demarcation; in practice, management is identical.
+
+Primary pathogens: beta-hemolytic streptococci (~70% of cases, particularly S. pyogenes and
+group C/G streptococci including S. dysgalactiae subsp. equisimilis), S. aureus (MSSA > MRSA
+in non-purulent disease).
+
+Special host/site considerations:
+- Cervical/facial: oral flora, anaerobes (Ludwig's angina)
+- Lower extremities + diabetes/PVD: Enterobacteriaceae, anaerobes, Gram-negatives
+- Immunosuppressed patients: Gram-negative organisms including Pseudomonas, E. coli, MDR
+  pathogens — mortality 67% if Gram-negatives not covered
+- Marine exposure + liver disease: Vibrio vulnificus (subtropical regions)
+
+CRITICAL POINT: MISDIAGNOSIS RATE IS VERY HIGH
+A systematic review and meta-analysis of 9 studies (n=1,600) found a mean misdiagnosis rate
+of 41% (95% CI 28–56%), with stasis dermatitis, eczematous dermatitis, and edema/lymphedema
+accounting for 54% of misdiagnoses. A dermatology RCT confirmed pseudocellulitis in 30.7% of
+hospitalized patients with presumed cellulitis, directly altering management in 23.9%.
+Bilateral lower extremity "cellulitis" is almost always a mimic.
+
+Common pseudocellulitis mimics (ranked):
+- Stasis/venous dermatitis (most common)
+- Eczematous dermatitis
+- Lymphedema
+- Erythema migrans (Lyme disease)
+- DVT
+- Contact dermatitis
+- Calciphylaxis (in ESRD patients)
+- Pyoderma gangrenosum (progressive necrosis with debridement → suspect this)
+
+ALT-70 score can aid differentiation: asymmetry (3 pts), leukocytosis WBC ≥10,000 (1 pt),
+tachycardia HR ≥90 (1 pt), age ≥70 (2 pts) — score <3 = >83% likelihood of pseudocellulitis;
+score >4 = >82% likelihood of true cellulitis.
+
+DIAGNOSIS
+Clinical diagnosis — no gold-standard test exists.
+Do NOT routinely culture (blood or wound) in uncomplicated outpatient cellulitis; sensitivity
+is low (<10% bacteremia in immunocompetent patients).
+POCUS useful to exclude abscess when diagnostic uncertainty exists.
+CT scan if necrotizing infection suspected (sensitivity 88.5%, specificity 93.3% for NSTI).
+
+OMINOUS SIGNS — WHEN TO SUSPECT NECROTIZING FASCIITIS / NSTI
+NSTI is initially misdiagnosed in ~71% of cases (systematic review, n=1,463), with mortality
+up to 30% even with aggressive management. Delay beyond 12–24 hours to surgery dramatically
+worsens outcomes; surgical intervention within 6 hours is associated with significantly
+increased survival.
+
+Sign / Feature — Clinical Significance
+- Pain out of proportion to physical findings — hallmark early sign of NSTI, most critical
+- Rapid progression despite appropriate antibiotics — failure to respond mandates surgical
+  re-evaluation
+- Hemorrhagic bullae — specificity 95.8% for NSTI, sensitivity 25.2%
+- Crepitus (gas in tissues) — late sign; highly specific — found in ~20–25% of NSTI
+- Skin necrosis / dusky / purple discoloration — late sign; indicates established fascial
+  necrosis
+- Focal anesthesia over the erythema — due to nerve destruction
+- Hypotension / septic shock — specificity 97.7% for NSTI (sensitivity only 21%)
+- Systemic toxicity (AMS, organ failure, high lactate) — mandates ICU-level care + immediate
+  surgical consult
+- "Dishwasher-fluid" pus at exploration — pathognomonic of NSTI intraoperatively
+
+Key principle: Absence of any single finding does NOT rule out NSTI. A high clinical suspicion
+warrants surgical consultation regardless of lab/imaging results.
+LRINEC Score caveat: LRINEC ≥6 has sensitivity of only 68.2% and specificity 84.8% — it
+cannot be used to rule out NSTI and does not replace clinical judgment; scores can remain 0–4
+even in confirmed necrotizing fasciitis.
+
+IDSA SEVERITY CLASSIFICATION & TREATMENT
+
+Non-purulent Cellulitis
+- Mild: No systemic signs; immunocompetent. Oral beta-lactam (cephalexin, amoxicillin,
+  dicloxacillin) x 5–6 days.
+- Moderate: Systemic signs (fever, tachycardia, hypotension, leukocytosis). IV therapy
+  (cefazolin, ceftriaxone, nafcillin/oxacillin); transition to oral when improving.
+- Severe: Failed oral therapy, immunocompromise, bullae, skin sloughing, hypotension, organ
+  dysfunction. IV vancomycin + piperacillin-tazobactam empirically; add broader coverage if
+  NSTI suspected.
+
+Add MRSA coverage (TMP-SMX, doxycycline oral; vancomycin IV) when: penetrating trauma,
+evidence of MRSA elsewhere/colonization, injection drug use, or SIRS.
+Immunosuppressed patients: Start broad-spectrum empirically (cover Gram-positives +
+Gram-negatives + anaerobes); de-escalate based on cultures within 24–48h.
+
+Necrotizing Fasciitis (if escalated)
+- Immediate surgical debridement — highest priority; return to OR every 24–48h until no
+  necrosis.
+- Empiric antibiotics: vancomycin or linezolid + piperacillin-tazobactam or carbapenem
+  (± ceftriaxone + metronidazole).
+- If GAS confirmed/suspected: Add clindamycin (antitoxin effect) + penicillin G; linezolid is
+  non-inferior to clindamycin as antitoxin adjunct.
+- Continue antibiotics until apyrexial ≥48–72h after last debridement.
+
+WHEN TO ESCALATE — DECISION FRAMEWORK
+
+Escalate to IV antibiotics / hospitalize if any of:
+- Systemic signs (T >38°C, HR >90, RR >24, WBC >12,000 or <400)
+- Failed oral antibiotics after 48–72h
+- Immunocompromised host (transplant, HIV, neutropenia, DM with poor control)
+- Rapidly expanding erythema despite antibiotics
+- Involvement of face/orbit/genitalia
+- Unable to tolerate oral medications
+
+Call surgery IMMEDIATELY if any of:
+- Pain out of proportion to exam
+- Bullae / skin necrosis / crepitus
+- Purple or bronze discoloration
+- Failure to improve with broad IV antibiotics
+- Septic shock or organ failure
+- "Finger test" positive (gray necrotic fascia, no bleeding, no resistance to blunt
+  dissection at bedside)
+
+BLOOD CULTURES: SELECTIVE USE ONLY
+- Uncomplicated immunocompetent cellulitis: Do NOT routinely culture.
+- Immunocompromised: Obtain blood cultures.
+- Intravascular prosthesis / pacemaker / valve: Obtain blood cultures (S. aureus bacteremia
+  consequences).
+- Suspected non-standard pathogen (marine/animal exposure): Obtain blood cultures.
+
+NON-RESPONSE AT 48–96 HOURS
+- Do not reflexively extend antibiotics — reassess the diagnosis first (pseudocellulitis?
+  abscess? NSTI?).
+- Consider dermatology or ID consult.
+- Consider POCUS or CT to exclude abscess/deep infection.
+- If truly worsening despite appropriate antibiotics → surgical exploration, not more
+  antibiotics.
