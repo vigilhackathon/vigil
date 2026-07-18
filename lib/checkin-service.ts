@@ -151,17 +151,13 @@ function questionById(protocol: CdsProtocol, id: string | null): Question | null
   return [...protocol.baseline, ...protocol.bank].find((q) => q.id === id) ?? null;
 }
 
-/**
- * Deterministic patient ack for degraded / scripted-less turns. Never diagnoses, never
- * reassures, never claims a nurse was told (invariant 8). Red flag ⇒ front-desk line.
- */
-function deterministicAck(redConfirmed: boolean): string {
-  return redConfirmed
-    ? "Thank you for telling me. Please tell the front desk right away."
-    : "Thanks, I've noted that. I'll check in with you again soon.";
-}
-
-const FRONT_DESK_LINE = "Please tell the front desk right away.";
+// Deterministic patient acks. Never diagnose, never reassure ("you're fine" banned), never
+// claim a nurse was notified (invariant 8). "Always call first": a concerning text answer is
+// NOT met with a "go to the front desk" instruction — the care team calls to verify.
+const ACK_CALLING =
+  "Thanks for telling me. The care team is going to give you a quick call in the next few minutes to check in — please keep your phone nearby.";
+const ACK_ROUTINE = "Thanks, I've noted that. I'll check in with you again a little later.";
+const ACK_POST_CALL = "Thanks for talking with me just now — please keep your phone nearby.";
 
 /**
  * Severity trajectory incl. baseline, without double-counting the baseline reading (the
@@ -320,24 +316,60 @@ export async function processCheckin(
         : questionById(protocol, vq.id);
   }
 
-  // 10. Patient ack. Model copy when it ran; deterministic otherwise. A confirmed red flag
-  //     ALWAYS carries the front-desk line (prompt hard rule, enforced here too).
-  const redConfirmed = decision.confirmedRed.length > 0 || decision.hardPhraseHits.length > 0;
-  const timerAck =
+  // 10. TWO-STAGE ESCALATION — "always call first" (human decision 2026-07-18).
+  //     A concern found in the TEXT triggers a VERIFICATION CALL, not a nurse page. Only a
+  //     voice-verified event (call_result) — or an already-committed (sticky) escalation —
+  //     reaches 'escalate' + pages. The deterministic guardrail still computes the clinical
+  //     floor (trace.rulesTier / confirmedFlags); this layer decides the ACTION.
+  const isCallResult = event.type === "call_result";
+  const alreadyEscalated = patient.tier === "escalate";
+  // A red flag or hard phrase in the text (or a model call-request) is a "concern" worth a call.
+  const textConcern =
+    decision.confirmedRed.length > 0 ||
+    decision.hardPhraseHits.length > 0 ||
+    decision.escalateToCall;
+
+  let committedTier: Tier;
+  let callRequested = false;
+  let paging = false;
+
+  if (isCallResult) {
+    // Voice-verified: the guardrail's escalate is real → page.
+    committedTier = decision.tierFinal;
+    paging = committedTier === "escalate";
+  } else if (alreadyEscalated) {
+    // Sticky post-call escalation; a later text turn never re-pages (dedup) nor downgrades.
+    committedTier = "escalate";
+  } else if (textConcern) {
+    // Hold the page, place the call. Escalate-grade text is capped to watch until verified.
+    committedTier = decision.tierFinal === "escalate" ? "watch" : decision.tierFinal;
+    callRequested = true;
+  } else {
+    committedTier = decision.tierFinal;
+  }
+
+  // 11. Patient ack. Scripted wording wins; a call-triggering turn gets a deterministic ack
+  //     (guarantees no "front desk", always announces the call); otherwise model / neutral copy.
+  const kickoffAck =
     history.length === 0
       ? "Thanks for confirming — a few quick questions while you wait."
       : "Just checking in.";
-  let patientAck =
-    opts.scripted?.patientAck ??
-    model?.patient_ack ??
-    (event.type === "timer" && !redConfirmed ? timerAck : deterministicAck(redConfirmed));
-  if (redConfirmed && !patientAck.includes(FRONT_DESK_LINE)) {
-    patientAck = `${patientAck} ${FRONT_DESK_LINE}`;
+  let patientAck: string;
+  if (opts.scripted) {
+    patientAck = opts.scripted.patientAck;
+  } else if (callRequested) {
+    patientAck = ACK_CALLING;
+  } else if (isCallResult) {
+    patientAck = ACK_POST_CALL;
+  } else if (event.type === "timer") {
+    patientAck = kickoffAck;
+  } else {
+    patientAck = model?.patient_ack ?? ACK_ROUTINE;
   }
 
-  // 11. Escalation call: the model may REQUEST it; only a guardrail-warranted escalation
-  //     actually triggers one (wired to the call layer in PR7/PR11).
-  const escalateToCall = decision.escalateToCall && decision.tierFinal === "escalate";
+  // `escalate_to_call` now means "place the verification call" — the signal VIG-16's call
+  // layer acts on. False on the call_result turn itself (the call already happened).
+  const escalateToCall = callRequested;
 
   // 12. Persist. Patient message (when they said something), then ONE agent message per
   //     issued question, trace attached (THE contract every route/UI reads).
@@ -353,9 +385,9 @@ export async function processCheckin(
     hardPhraseHits: decision.hardPhraseHits,
     modelRan,
     modelTierProposed: decision.modelTierProposed,
-    rulesTier: decision.rulesTier,
-    tierFinal: decision.tierFinal,
-    reviewNow: decision.reviewNow,
+    rulesTier: decision.rulesTier, // the clinical floor (may be escalate even when we call-first)
+    tierFinal: committedTier, // the ACTIONED tier (call-first holds text escalate at watch)
+    reviewNow: decision.reviewNow || callRequested,
     escalateToCall,
     createdAt: now.toISOString(),
   };
@@ -389,8 +421,10 @@ export async function processCheckin(
     .from("patients")
     .update({
       baseline,
-      tier: decision.tierFinal,
-      review_now: decision.reviewNow || (patient.review_now && decision.tierFinal !== "routine"),
+      tier: committedTier,
+      review_now: decision.reviewNow || callRequested || (patient.review_now && committedTier !== "routine"),
+      // "calling" surfaces the 📞 board state while we verify by voice; cleared once resolved.
+      suggested_action: callRequested ? "calling" : committedTier === "escalate" ? "seen" : null,
       tier_reason:
         model?.reason_one_liner ||
         decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
@@ -408,48 +442,17 @@ export async function processCheckin(
     console.warn(`[guardrail] discarded model flag ids for ${patientId}:`, decision.discardedFlags);
   }
 
-  // 14. Nurse paging (VIG-12): every escalation flows through the notifier's policy —
-  //     same-reason dedup means a repeat category updates the alert instead of re-paging.
-  //     Only fires on a deterministic escalate; a notifier failure must not 500 a check-in.
-  let newPageFired = false; // gates the voice call (fix: sticky escalate must not re-call)
-  if (decision.tierFinal === "escalate") {
-    // Pager copy is DETERMINISTIC-FIRST: confirmed flag labels + numeric trend (the frozen
-    // "WR:" format wants facts, not model prose). Model wording only when no flag exists.
-    const reason =
-      decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
-      (decision.hardPhraseHits.length > 0
-        ? `patient reported "${decision.hardPhraseHits[0]}"`
-        : model?.reason_one_liner || "deterministic escalation");
-    try {
-      const nr = await notifyEscalation(db, {
-        patientId,
-        name: patient.name,
-        ageSex: `${patient.age ?? "?"}${(patient.sex ?? "").charAt(0).toUpperCase()}`,
-        complaint: protocol.complaint,
-        reason,
-        trend: trace.severityHistory.join("→") || model?.trend_summary || "n/a",
-        confirmedRed: decision.confirmedRed,
-        hardPhraseHits: decision.hardPhraseHits,
-        deltaDriven:
-          decision.rulesTier === "escalate" &&
-          decision.confirmedRed.length === 0 &&
-          decision.hardPhraseHits.length === 0,
-      });
-      newPageFired = nr.paged;
-    } catch (e) {
-      console.error("[notifier] failed (check-in continues):", e);
-    }
-  }
-
-  // 15. Escalation voice call (VIG-16): only when a NEW page fired (a new distinct flag
-  //     category) — sticky escalate means tierFinal stays "escalate" on every later event, and
-  //     without this gate the patient would be re-called on every reply. A call_result event
-  //     never triggers another call (no loops); env/phone-gated; failure never 500s a check-in.
-  if (newPageFired && event.type !== "call_result") {
+  // 14. Escalation VOICE CALL (VIG-16) under "ALWAYS CALL FIRST": when the TEXT screen catches a
+  //     concern (`callRequested`), VIGIL places the verification call and the nurse is NOT paged
+  //     yet. Env/phone-gated — a no-op when unconfigured (the demo driver then injects the
+  //     call_result). Never on a call_result event (no loops); failure never 500s a check-in.
+  if (callRequested && event.type !== "call_result") {
     try {
       const callReason =
         decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
-        "your recent check-in suggested things may be changing";
+        (decision.hardPhraseHits.length > 0
+          ? `patient reported "${decision.hardPhraseHits[0]}"`
+          : "your recent check-in suggested things may be changing");
       const res = await placeEscalationCall(
         patient.phone,
         buildCallContext({
@@ -466,7 +469,7 @@ export async function processCheckin(
         await db.from("messages").insert({
           patient_id: patientId,
           role: "system",
-          content: "VIGIL placed an escalation call to the patient.",
+          content: "VIGIL placed a verification call to the patient.",
           trace: { kind: "call", conversationId: res.conversationId },
         });
       } else {
@@ -477,10 +480,41 @@ export async function processCheckin(
     }
   }
 
+  // 15. Nurse paging (VIG-12): fires ONLY when a call_result VERIFIED the escalation (`paging`) —
+  //     never from a text turn ("always call first"). Same-reason dedup lives in the notifier;
+  //     a notifier failure must not 500 a check-in.
+  if (paging) {
+    // Pager copy is DETERMINISTIC-FIRST: confirmed flag labels + numeric trend (the frozen
+    // "WR:" format wants facts, not model prose). Model wording only when no flag exists.
+    const reason =
+      decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
+      (decision.hardPhraseHits.length > 0
+        ? `patient reported "${decision.hardPhraseHits[0]}"`
+        : model?.reason_one_liner || "deterministic escalation");
+    try {
+      await notifyEscalation(db, {
+        patientId,
+        name: patient.name,
+        ageSex: `${patient.age ?? "?"}${(patient.sex ?? "").charAt(0).toUpperCase()}`,
+        complaint: protocol.complaint,
+        reason,
+        trend: trace.severityHistory.join("→") || model?.trend_summary || "n/a",
+        confirmedRed: decision.confirmedRed,
+        hardPhraseHits: decision.hardPhraseHits,
+        deltaDriven:
+          decision.rulesTier === "escalate" &&
+          decision.confirmedRed.length === 0 &&
+          decision.hardPhraseHits.length === 0,
+      });
+    } catch (e) {
+      console.error("[notifier] failed (check-in continues):", e);
+    }
+  }
+
   return {
     patient_ack: patientAck,
     next_question: nextQuestion,
-    tier: decision.tierFinal,
+    tier: committedTier,
     review_now: trace.reviewNow,
     escalate_to_call: escalateToCall,
     trace,
