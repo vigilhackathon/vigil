@@ -411,6 +411,7 @@ export async function processCheckin(
   // 14. Nurse paging (VIG-12): every escalation flows through the notifier's policy —
   //     same-reason dedup means a repeat category updates the alert instead of re-paging.
   //     Only fires on a deterministic escalate; a notifier failure must not 500 a check-in.
+  let newPageFired = false; // gates the voice call (fix: sticky escalate must not re-call)
   if (decision.tierFinal === "escalate") {
     // Pager copy is DETERMINISTIC-FIRST: confirmed flag labels + numeric trend (the frozen
     // "WR:" format wants facts, not model prose). Model wording only when no flag exists.
@@ -420,7 +421,7 @@ export async function processCheckin(
         ? `patient reported "${decision.hardPhraseHits[0]}"`
         : model?.reason_one_liner || "deterministic escalation");
     try {
-      await notifyEscalation(db, {
+      const nr = await notifyEscalation(db, {
         patientId,
         name: patient.name,
         ageSex: `${patient.age ?? "?"}${(patient.sex ?? "").charAt(0).toUpperCase()}`,
@@ -429,18 +430,22 @@ export async function processCheckin(
         trend: trace.severityHistory.join("→") || model?.trend_summary || "n/a",
         confirmedRed: decision.confirmedRed,
         hardPhraseHits: decision.hardPhraseHits,
+        deltaDriven:
+          decision.rulesTier === "escalate" &&
+          decision.confirmedRed.length === 0 &&
+          decision.hardPhraseHits.length === 0,
       });
+      newPageFired = nr.paged;
     } catch (e) {
       console.error("[notifier] failed (check-in continues):", e);
     }
   }
 
-  // 15. Escalation voice call (VIG-16): on a deterministic escalate that is not itself a call
-  //     result, VIGIL calls the patient to gather richer detail. The transcript + yes/no
-  //     confirmations re-enter the guardrail via /api/call-result. Env-gated + fire-and-forget:
-  //     a call failure (or unconfigured env) must never 500 a check-in, and a call_result event
-  //     never triggers another call (no loops).
-  if (decision.tierFinal === "escalate" && event.type !== "call_result") {
+  // 15. Escalation voice call (VIG-16): only when a NEW page fired (a new distinct flag
+  //     category) — sticky escalate means tierFinal stays "escalate" on every later event, and
+  //     without this gate the patient would be re-called on every reply. A call_result event
+  //     never triggers another call (no loops); env/phone-gated; failure never 500s a check-in.
+  if (newPageFired && event.type !== "call_result") {
     try {
       const callReason =
         decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
@@ -457,6 +462,7 @@ export async function processCheckin(
         }),
       );
       if (res.ok) {
+        console.log(`[voice-call] placed for ${patientId} (conversation ${res.conversationId})`);
         await db.from("messages").insert({
           patient_id: patientId,
           role: "system",
