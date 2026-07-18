@@ -1,91 +1,77 @@
-// GET /api/state?patientId= — VIG-10: server-state snapshot for a patient.
+// GET /api/state?patientId= — the patient thread is SERVER-STATE-DRIVEN: it polls this (~2s)
+// and renders from it. Driver-injected beats appear on the phone automatically because the
+// phone is a viewer of server state, never a parallel state machine.
 //
-// The patient web thread (VIG-11) and the nurse EMR UI (VIG-15) both read from here rather
-// than holding a parallel client state machine. Returns the patient row, the latest agent
-// message (+ its CheckinTrace), the question the patient is currently on, and ack status.
+// Patient-safe by construction: no traces, no tiers, no flags, no system/alert rows — the
+// patient never sees clinical reasoning (safety invariant 8 adjacent).
+import { supabaseServer } from "@/lib/supabase-server";
+import type { ApiError, Baseline, CdsProtocol, CheckinTrace, Question } from "@/lib/types";
 
-import { supabaseServer } from "../../../lib/supabase-server";
-import type { ApiError, Baseline, CdsProtocol, CheckinTrace, Question } from "../../../lib/types";
-
-interface PatientStateRow {
-  id: string;
-  name: string;
-  age: number | null;
-  sex: string | null;
-  complaint: string | null;
-  esi: number;
-  channel: string;
-  tier: string;
-  review_now: boolean;
-  tier_reason: string | null;
-  trend: string | null;
-  cadence_minutes: number;
-  next_checkin_due: string | null;
-  last_response_at: string | null;
-  ack_at: string | null;
-  ack_by: string | null;
-  protocol: CdsProtocol | null;
-  baseline: Baseline | null;
-}
-
-function err(error: string, status: number): Response {
-  return Response.json({ error } satisfies ApiError, { status });
+interface ThreadMessage {
+  role: "agent" | "patient";
+  content: string;
+  createdAt: string;
 }
 
 export async function GET(req: Request): Promise<Response> {
   const patientId = new URL(req.url).searchParams.get("patientId");
-  if (!patientId) return err("patientId query param required", 400);
+  if (!patientId) {
+    return Response.json({ error: "patientId required" } satisfies ApiError, { status: 400 });
+  }
 
   const db = supabaseServer();
-
-  const { data: patientData, error: pErr } = await db
+  // NOTE: no ack_at here — v4: after a nurse acknowledges, the agent stays SILENT;
+  // the patient page must have no way to render an ack banner.
+  const { data: patient, error: pErr } = await db
     .from("patients")
-    .select(
-      "id, name, age, sex, complaint, esi, channel, tier, review_now, tier_reason, trend, " +
-        "cadence_minutes, next_checkin_due, last_response_at, ack_at, ack_by, protocol, baseline",
-    )
+    .select("id, name, phone, protocol, baseline")
     .eq("id", patientId)
     .maybeSingle();
+  if (pErr) return Response.json({ error: pErr.message } satisfies ApiError, { status: 500 });
+  if (!patient) {
+    return Response.json({ error: "patient not found" } satisfies ApiError, { status: 404 });
+  }
 
-  if (pErr) return err(`state read failed: ${pErr.message}`, 500);
-  if (!patientData) return err("patient not found", 404);
-  const patient = patientData as unknown as PatientStateRow;
-
-  const { data: lastAgentData } = await db
+  const { data: msgs, error: mErr } = await db
     .from("messages")
-    .select("content, trace, created_at")
+    .select("role, content, trace, created_at")
     .eq("patient_id", patientId)
-    .eq("role", "agent")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const lastAgent = lastAgentData as
-    | { content: string; trace: CheckinTrace | null; created_at: string }
-    | null;
+    .order("created_at", { ascending: true })
+    .limit(100);
+  if (mErr) return Response.json({ error: mErr.message } satisfies ApiError, { status: 500 });
 
-  // Current question: next unanswered baseline question until baseline is complete; then the
-  // question the last agent turn asked.
-  const protocol = patient.protocol;
-  const answers = patient.baseline?.answers ?? {};
-  const baselineComplete = patient.baseline?.complete ?? false;
+  const protocol = patient.protocol as CdsProtocol | null;
+  const baseline = patient.baseline as Baseline | null;
+
+  // Latest issued question comes from the newest agent trace (one agent row per question).
+  const agentTraces = (msgs ?? [])
+    .filter((m) => m.role === "agent" && m.trace && "event" in (m.trace as object))
+    .map((m) => m.trace as CheckinTrace);
+  const lastTrace = agentTraces.length ? agentTraces[agentTraces.length - 1] : null;
 
   let currentQuestion: Question | null = null;
   if (protocol) {
-    if (!baselineComplete) {
-      currentQuestion = protocol.baseline.find((q) => !(q.id in answers)) ?? null;
-    } else {
-      const askedId = lastAgent?.trace?.questionAskedId ?? null;
-      currentQuestion = askedId
-        ? ([...protocol.baseline, ...protocol.bank].find((q) => q.id === askedId) ?? null)
-        : null;
+    if (!baseline?.complete) {
+      // Baseline walk: next unanswered baseline question, deterministically.
+      const answered = baseline?.answers ?? {};
+      currentQuestion = protocol.baseline.find((q) => answered[q.id] === undefined) ?? null;
+    } else if (lastTrace?.questionAskedId) {
+      currentQuestion =
+        [...protocol.baseline, ...protocol.bank].find((q) => q.id === lastTrace.questionAskedId) ??
+        null;
     }
   }
 
+  const thread: ThreadMessage[] = (msgs ?? [])
+    .filter((m): m is typeof m & { role: "agent" | "patient" } => m.role !== "system")
+    .map((m) => ({ role: m.role, content: m.content, createdAt: m.created_at as string }));
+
   return Response.json({
-    patient,
-    lastAgentMessage: lastAgent ? { content: lastAgent.content, trace: lastAgent.trace } : null,
+    patient: { id: patient.id, name: patient.name },
+    identityConfirmed: Boolean((baseline?.answers ?? {})["__dob_confirmed"]),
+    phoneCaptured: Boolean(patient.phone),
+    baselineComplete: Boolean(baseline?.complete),
     currentQuestion,
-    ackAt: patient.ack_at,
-    baselineComplete,
+    messages: thread,
   });
 }

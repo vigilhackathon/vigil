@@ -1,49 +1,48 @@
-// POST /api/checkin — VIG-10: the canonical check-in entry point.
-//
-// Thin HTTP wrapper over lib/checkin-service.processCheckin (THE one brain). Every channel
-// funnels here: the mock web thread (VIG-11), the demo driver, and the smoke test. No route
-// ever fetches another route — they all import the service.
-// maxDuration=30 because processCheckin transitively calls Claude (the §2 model funnel).
-
+// POST /api/checkin — the live patient event entrypoint. Thin: zod-validate, call the brain.
 import { z } from "zod";
-import { PatientNotFoundError, processCheckin } from "../../../lib/checkin-service";
-import type { ApiError, CheckinEvent } from "../../../lib/types";
+import { PatientNotFoundError, processCheckin } from "@/lib/checkin-service";
+import type { ApiError, CheckinResponse } from "@/lib/types";
 
-export const maxDuration = 30;
+export const maxDuration = 30; // transitively calls Claude
 
 const AnswerValue = z.union([z.string(), z.array(z.string()), z.number()]);
 
-const Event = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("answers"), answers: z.record(z.string(), AnswerValue), freeText: z.string().optional() }),
-  z.object({ type: z.literal("sms_in"), body: z.string() }),
+const EventSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("answers"),
+    answers: z.record(z.string(), AnswerValue),
+    freeText: z.string().max(500).optional(),
+  }),
+  z.object({ type: z.literal("sms_in"), body: z.string().min(1).max(1600) }),
   z.object({ type: z.literal("timer") }),
-  z.object({ type: z.literal("call_result"), transcript: z.string().optional(), structured: z.record(z.string(), z.string()).optional() }),
+  z.object({
+    type: z.literal("call_result"),
+    transcript: z.string().optional(),
+    structured: z.record(z.string(), z.string()).optional(),
+  }),
 ]);
 
-const Body = z.object({ patientId: z.string().min(1), event: Event });
-
-function err(error: string, status: number): Response {
-  return Response.json({ error } satisfies ApiError, { status });
-}
+const BodySchema = z.object({
+  patientId: z.string().uuid(),
+  event: EventSchema,
+});
 
 export async function POST(req: Request): Promise<Response> {
-  let json: unknown;
+  let body: z.infer<typeof BodySchema>;
   try {
-    json = await req.json();
+    body = BodySchema.parse(await req.json());
   } catch {
-    return err("invalid JSON body", 400);
-  }
-
-  const parsed = Body.safeParse(json);
-  if (!parsed.success) {
-    return err("body must be { patientId, event: CheckinEvent }", 400);
+    return Response.json({ error: "invalid body" } satisfies ApiError, { status: 400 });
   }
 
   try {
-    const response = await processCheckin(parsed.data.patientId, parsed.data.event as CheckinEvent);
-    return Response.json(response, { status: 200 });
+    const result: CheckinResponse = await processCheckin(body.patientId, body.event);
+    return Response.json(result);
   } catch (e) {
-    if (e instanceof PatientNotFoundError) return err("patient not found", 404);
-    return err(`check-in failed: ${e instanceof Error ? e.message : "unknown"}`, 500);
+    if (e instanceof PatientNotFoundError) {
+      return Response.json({ error: "patient not found" } satisfies ApiError, { status: 404 });
+    }
+    console.error("[/api/checkin]", e);
+    return Response.json({ error: "check-in failed" } satisfies ApiError, { status: 500 });
   }
 }
