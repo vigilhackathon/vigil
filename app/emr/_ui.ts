@@ -13,6 +13,8 @@ export interface PatientRow {
   esi: number;
   tier: Tier;
   review_now: boolean;
+  /** 'calling' while a verification voice call is in flight (call-first flow, VIG-19). */
+  suggested_action: string | null;
   tier_reason: string | null;
   trend: string | null;
   cadence_minutes: number;
