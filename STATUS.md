@@ -5,7 +5,7 @@
 > Linear in sync. Update rules: see **CLAUDE.md → "Session coordination — STATUS.md"**. If you did something
 > meaningful and didn't record it here, you're not done.
 
-**Last updated:** 2026-07-18 — PR0 built, gates green, PR #2 open (awaiting checkpoint merge).
+**Last updated:** 2026-07-18 — PR0 merged. PR2 (colleague) + PR3 (subagent) in flight; Twilio/ElevenLabs setup next.
 
 ## Reference map
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — v4 source of truth (design, integrations, scope tiers).
@@ -18,10 +18,10 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 | PR | Linear | Title | Status | Owner | Branch | Notes |
 |----|--------|-------|--------|-------|--------|-------|
-| PR0 | VIG-5 | scaffold + frozen v4 contracts | 🟡 in review | Pranav/Claude | `pr00-scaffold-contracts` | **PR #2 open**, gates green; awaiting checkpoint merge. Adds `lib/types.ts` (frozen), migration, `/api/sms` stub, smoke-parse |
+| PR0 | VIG-5 | scaffold + frozen v4 contracts | ✅ merged | Pranav/Claude | merged (PR #2) | `lib/types.ts` frozen, migration, `/api/sms` stub, smoke-parse. **zod/v4 required for SDK.** |
 | PR1 | VIG-6 | mock CDS + cellulitis protocol | 🟡 | **Charumathi** | — | clinical content; she'll add the protocol MD |
-| PR2 | VIG-7 | guardrail engine + tests | ⚪ | — | — | needs PR0 types |
-| PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | ⚪ | — | — | needs PR0 types |
+| PR2 | VIG-7 | guardrail engine + tests | 🟡 | colleague | — | in progress |
+| PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | 🟡 | Claude subagent | `pr03-agent` | in progress (background subagent) |
 | PR4 | VIG-9 | checkin-service (brain) + supabase-server | ⚪ | — | — | needs PR1,2,3 |
 | PR5 | VIG-10 | mock FHIR EMR + enroll + routes + smoke-api | ⚪ | — | — | needs PR4 |
 | PR6 | VIG-11 | Twilio SMS channel | ⚪ | — | — | ⛔ needs VIG-17 + PR4 |
@@ -55,6 +55,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 ## Build log (newest first)
 ### 2026-07-18
+- **PR0 merged to main (PR #2).** VIG-5 → Done. Dispatched a background subagent for **PR3** (`lib/agent.ts`, branch `pr03-agent`) — opens its own PR, no merge. **PR2** (guardrail) in progress by a colleague. **PR1** (CDS/cellulitis) with Charumathi. Next: Twilio (VIG-17) + ElevenLabs (VIG-18) account setup with Pranav.
 - **PR0 built + PR #2 opened** (awaiting checkpoint merge). Wrote `lib/types.ts` (frozen), `supabase/migrations/001_init.sql`, `app/api/sms/route.ts` (stub), `scripts/smoke-parse.ts`. Gate green: `npm run build` ✓ + live `smoke-parse` ✓. **Found: SDK needs `zod/v4`** (see decisions).
 - **Added STATUS.md** (this file) + CLAUDE.md coordination rule (direct to main).
 - **Linear rewritten to v4** (VIG-5…16 repurposed; VIG-17/18 setup added). VIG-6 assigned to Charumathi (In Progress). SMS/call tickets carry exact Twilio/ElevenLabs API specs.
@@ -62,6 +63,6 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 - **Scaffold done** (Next 15.5.20 / React 19.1.0) + deps installed (uncommitted, rides on PR0 branch).
 
 ## Now / Next / Blocked
-- **NOW:** finish PR0 (contracts) → gate (`npm run build` + smoke-parse) → PR → checkpoint → merge.
-- **NEXT (parallelizable once PR0 merges):** PR1 (Charumathi, clinical), PR2 (guardrail), PR3 (agent) can all go at once — they only depend on PR0's frozen types.
+- **NOW:** PR1 (Charumathi), PR2 (colleague), PR3 (Claude subagent) in flight — all on the frozen types. Pranav + Claude doing Twilio (VIG-17) + ElevenLabs (VIG-18) setup.
+- **NEXT:** PR4 (checkin-service, the integrator) once PR1+PR2+PR3 land; then PR5 routes, PR6 SMS (needs Twilio), PR7 notifier.
 - **BLOCKED:** PR6 (SMS) & PR11 (call) on Twilio/ElevenLabs setup (VIG-17/18) — do the account setup in parallel with coding.
