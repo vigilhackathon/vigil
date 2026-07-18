@@ -5,8 +5,8 @@
 // After ack the agent stays SILENT — the patient is NOT told; the nurse just goes (v4 rule).
 
 import { z } from "zod";
-import { supabaseServer } from "../../../lib/supabase-server";
-import type { ApiError } from "../../../lib/types";
+import { supabaseServer } from "@/lib/supabase-server";
+import type { ApiError } from "@/lib/types";
 
 const Body = z.object({ patientId: z.string().min(1) });
 

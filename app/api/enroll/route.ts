@@ -6,10 +6,10 @@
 // Channel is "sms" (production is real SMS; the demo mocks delivery as an in-app web thread).
 
 import { z } from "zod";
-import { MockCds } from "../../../lib/cds";
-import { getById, lookup } from "../../../lib/emr";
-import { supabaseServer } from "../../../lib/supabase-server";
-import type { ApiError, Baseline, CdsProtocol } from "../../../lib/types";
+import { MockCds } from "@/lib/cds";
+import { getById, lookup } from "@/lib/emr";
+import { supabaseServer } from "@/lib/supabase-server";
+import type { ApiError, Baseline, CdsProtocol } from "@/lib/types";
 
 const Body = z.union([
   z.object({ fhirId: z.string().min(1) }),
