@@ -5,7 +5,7 @@
 > Linear in sync. Update rules: see **CLAUDE.md → "Session coordination — STATUS.md"**. If you did something
 > meaningful and didn't record it here, you're not done.
 
-**Last updated:** 2026-07-18 — PR3 up for review (#3). Shared tree deconflicted (guardrail → separate clone). Twilio/Supabase setup in progress.
+**Last updated:** 2026-07-18 — PR1+2+3 MERGED; main fully green (build + suites + 8/8 guardrail×CDS integration smoke). **PR4 is the unblocked critical path.** Twilio TF-SMS verify pending.
 
 > **⚠️ ONE DIRECTORY = ONE SESSION.** The main clone `~/Hackathon/vigil` is the orchestrator (main). The guardrail session must work from a **separate clone** on `pr02-guardrail` (its WIP is already committed+pushed there). Do NOT run two sessions in the same folder — it shares one git HEAD and corrupts state.
 
@@ -21,10 +21,10 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 | PR | Linear | Title | Status | Owner | Branch | Notes |
 |----|--------|-------|--------|-------|--------|-------|
 | PR0 | VIG-5 | scaffold + frozen v4 contracts | ✅ merged | Pranav/Claude | merged (PR #2) | `lib/types.ts` frozen, migration, `/api/sms` stub, smoke-parse. **zod/v4 required for SDK.** |
-| PR1 | VIG-6 | mock CDS + cellulitis protocol | 🟡 | **Charumathi** | — | clinical content; she'll add the protocol MD |
-| PR2 | VIG-7 | guardrail engine + tests | 🟡 in review | Claude (guardrail clone) | `pr02-guardrail` | **PR #4 open** (checkpoint, not merged). 17/17 tests + build green. Pure protocol-agnostic engine; exports for PR4/PR7 |
-| PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | 🟡 in review | Claude subagent | `pr03-agent` | **PR #3 open**, build green, mergeable; awaiting checkpoint |
-| PR4 | VIG-9 | checkin-service (brain) + supabase-server | ⚪ | — | — | needs PR1,2,3 |
+| PR1 | VIG-6 | mock CDS + cellulitis protocol | ✅ merged | **Charumathi** | merged (PR #5) | `lib/cds.ts` (`MockCds.author`) + `scripts/test-cds.ts` green. Flags `R_*`/`W_*`; cadence routine 30 / watch 15 / escalate 5 |
+| PR2 | VIG-7 | guardrail engine + tests | ✅ merged | Claude (guardrail clone) | merged (PR #4) | 17/17 + build green. **Guardrail × real CDS integration smoke: 8/8 green** (post-merge) |
+| PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | ✅ merged | Claude subagent | merged (PR #3) | `lib/agent.ts` invariant-compliant (zod/v4, sonnet-5, no temp, 8s/0-retry funnel) |
+| PR4 | VIG-9 | checkin-service (brain) + supabase-server | ⚪ **UNBLOCKED** | — | — | PR1+2+3 all merged — ready to start; the critical-path integrator |
 | PR5 | VIG-10 | mock FHIR EMR + enroll + routes + smoke-api | ⚪ | — | — | needs PR4 |
 | PR6 | VIG-11 | Twilio SMS channel | ⚪ | — | — | ⛔ needs VIG-17 + PR4 |
 | PR7 | VIG-12 | Notifier + nurse paging | ⚪ | — | — | needs PR4 |
@@ -57,6 +57,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 
 ## Build log (newest first)
 ### 2026-07-18
+- **Health check on merged main (guardrail-clone session):** PRs #3 (agent), #4 (guardrail), #5 (CDS) all squash-merged; no open PRs. Full gate sweep on `main`: `npm run build` ✓ · `test-guardrail` 17/17 ✓ · `test-cds` ✓. **Cross-integration smoke (guardrail × real `MockCds.author("cellulitis")`) 8/8 green** — baseline red chip escalates, W_SPREAD watches, R_RAPID escalates, real hardPhrases escalate on degraded model, model-escalate-w/o-flag → watch+review_now, cadence map (30/15/5) flows through, next-question substitution + dedup work on real ids. **Nothing broken.** ⚠️ Note for PR4: VIG-9's ticket text says escalate cadence 10; the authored protocol says 5 — the guardrail reads `protocol.cadenceMinutes[tier]`, so the protocol (5) wins unless humans say otherwise. Linear synced: VIG-6 → Done, VIG-9 noted unblocked.
 - **PR #4 (guardrail) opened** from the separate `vigil-guardrail` clone — VIG-7 → In Review, **not merged** (checkpoint). `lib/guardrail.ts` is pure + protocol-agnostic (applies any `CdsProtocol`; decoupled from PR1's `lib/cds.ts`). `scripts/test-guardrail.ts` = cellulitis fixture + 17/17 PLAN §7.1 cases green; `npm run build` green. Exports for PR4/PR7: `evaluate`, `confirmedFlagsFromAnswers`, `hardPhraseHits`, `rulesTier`, `validateModel`, `validateNextQuestionId`, `parseYesNo`, `alertCategory`, `shouldPushAlert`, `maxTier`. Cadence read from `protocol.cadenceMinutes[tier]`.
 - **Setup:** Supabase SQL run ✓. Twilio funded; toll-free number has Voice but **SMS blocked pending toll-free verification** (submitted) — got a local number as backup. Vercel auto-deploy confirmed (env vars still need adding in dashboard). ElevenLabs Conv AI agent setup in progress.
 - **PR #3 (agent.ts) opened** by the subagent — build green, mergeable, **not merged** (awaiting checkpoint). Notable: `confidence` unbounded in zod; history folded into one user message.
@@ -70,6 +71,6 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 - **Scaffold done** (Next 15.5.20 / React 19.1.0) + deps installed (uncommitted, rides on PR0 branch).
 
 ## Now / Next / Blocked
-- **NOW:** PR2 (guardrail) → **PR #4 open, awaiting checkpoint**. PR3 (agent, PR #3) open. PR1 (Charumathi, CDS/cellulitis) in flight — all on the frozen types. Pranav + Claude doing Twilio (VIG-17) + ElevenLabs (VIG-18) setup.
-- **NEXT:** PR4 (checkin-service, the integrator) once PR1+PR2+PR3 land; then PR5 routes, PR6 SMS (needs Twilio), PR7 notifier.
+- **NOW:** **PR4 (checkin-service) is the critical path — unblocked, unclaimed.** PR1+2+3 merged, main fully green (build + both suites + 8/8 integration smoke). Twilio (VIG-17: TF SMS verification pending) + ElevenLabs (VIG-18) setup continue in parallel.
+- **NEXT:** PR5 (EMR/enroll/routes/smoke-api) right behind PR4; then PR6 SMS (needs Twilio verify), PR7 notifier, PR8 handoff. Add env vars in the Vercel dashboard.
 - **BLOCKED:** PR6 (SMS) & PR11 (call) on Twilio/ElevenLabs setup (VIG-17/18) — do the account setup in parallel with coding.
