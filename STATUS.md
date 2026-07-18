@@ -31,7 +31,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 | PR8 | VIG-13 | Handoff/SBAR + transcript | ✅ merged | Claude (guardrail clone) | merged (PR #11) | Template-first + Claude upgrade; negatives exclude later-positives |
 | PR9 | VIG-14 | Demo driver + cellulitis scripts | 🟡 in review | Claude (guardrail clone) | `pr09-demo-driver` | **PR #12 open.** Dress run green: chen routine→watch→ESCALATE (alert w/ 3 flags, 4→5→7), dave holds, advance idempotent, thread auto-renders beats |
 | PR10 | VIG-15 | Mock EMR UI (dashboard + record tabs) | 🟡 | **Charumathi** | — | **start fixture-first NOW** against frozen types; swap to real APIs when PR5/7/8 land |
-| PR11 | VIG-16 | Escalation voice call (ElevenLabs) [REQUIRED — live channel] | 🟡 in review | Pranav/Claude | `pr11-voice-call` | **PR #13 open.** call trigger (deterministic escalate, non-call event, env+phone gated) + `/api/call-result` (HMAC + deterministic parse) + dynamic-var builder from frozen protocol. Build green; live-call test pending a demo phone. |
+| PR11 | VIG-16 | Escalation voice call (ElevenLabs) [REQUIRED — live channel] | ✅ merged | Pranav/Claude | merged (PR #13) | Call trigger (deterministic escalate, non-call event, env+phone gated) + `/api/call-result` (HMAC + deterministic parse) + dynamic-var builder from frozen protocol. Live-call test pending. |
 | SETUP | VIG-17 | Twilio account/number/verify/webhook | ⚪ | Pranav | — | **before lunch** |
 | SETUP | VIG-18 | ElevenLabs Conv AI agent + import number | ⚪ | Pranav | — | stretch support |
 
@@ -58,6 +58,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 - **Safety invariant preserved under dynamic protocols:** CDS *authors* the flag→tier map once; the guardrail *applies* it deterministically. Model never lowers a tier, never holds the pager.
 - **⚠️ zod/v4 REQUIRED for the SDK:** `@anthropic-ai/sdk@0.112.3`'s `zodOutputFormat` (from `@anthropic-ai/sdk/helpers/zod`) imports **`zod/v4`**. Any zod schema fed to `messages.parse` (agent.ts mirror, etc.) MUST `import { z } from "zod/v4"` — plain `import { z } from "zod"` fails type-check. `client.messages.parse({ …, output_config: { format: zodOutputFormat(schema) } }, { timeout, maxRetries: 0 })` confirmed working against the live API.
 - **Workflow:** real GitHub PRs, squash-merge, checkpoint before each merge; branch per ticket. STATUS.md/coordination docs go straight to `main`.
+- **Review/test plan (Pranav):** once **VIG-15 (PR10 EMR UI)** lands, run a **full Fable review** of the whole codebase, then begin **manual end-to-end testing** (incl. the live voice call). Hold new feature work until then. Reminder: mirror all `.env.local` vars into **Vercel** before testing the deployed app.
 
 ## Build log (newest first)
 ### 2026-07-18
