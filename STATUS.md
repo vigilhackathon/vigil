@@ -5,7 +5,7 @@
 > Linear in sync. Update rules: see **CLAUDE.md → "Session coordination — STATUS.md"**. If you did something
 > meaningful and didn't record it here, you're not done.
 
-**Last updated:** 2026-07-18 — **PR4 BUILT: PR #7 open** (checkin-service + supabase-server), live-smoked 15/15 vs real Supabase + Claude. ⚠️ env gotcha: `NEXT_PUBLIC_SUPABASE_URL` in `.env.local` has a trailing `/rest/v1/` (see decisions). PR5/PR10 fixture-first in other sessions.
+**Last updated:** 2026-07-18 — **PR4 MERGED** (#7) + **DEMO CHANNEL PIVOT** (text = mock web thread; ElevenLabs call = REQUIRED live channel). Split: guardrail session → **PR7 notifier** (then PR8) · orchestrator → **PR6 mock thread / PR11 call** · Charumathi → PR5+PR10 · Pranav → VIG-18 + Vercel env vars.
 
 > **⚠️ ONE DIRECTORY = ONE SESSION.** The main clone `~/Hackathon/vigil` is the orchestrator (main). The guardrail session must work from a **separate clone** on `pr02-guardrail` (its WIP is already committed+pushed there). Do NOT run two sessions in the same folder — it shares one git HEAD and corrupts state.
 
@@ -24,10 +24,10 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 | PR1 | VIG-6 | mock CDS + cellulitis protocol | ✅ merged | **Charumathi** | merged (PR #5) | `lib/cds.ts` (`MockCds.author`) + `scripts/test-cds.ts` green. Flags `R_*`/`W_*`; cadence routine 30 / watch 15 / escalate 5 |
 | PR2 | VIG-7 | guardrail engine + tests | ✅ merged | Claude (guardrail clone) | merged (PR #4) | 17/17 + build green. **Guardrail × real CDS integration smoke: 8/8 green** (post-merge) |
 | PR3 | VIG-8 | check-in agent (SMS + escalate-to-call) | ✅ merged | Claude subagent | merged (PR #3) | `lib/agent.ts` invariant-compliant (zod/v4, sonnet-5, no temp, 8s/0-retry funnel) |
-| PR4 | VIG-9 | checkin-service (brain) + supabase-server | 🟡 in review | Claude (guardrail clone) | `pr04-checkin-service` | **PR #7 open.** Live smoke 15/15 (real Supabase + Claude): baseline accumulation → watch → escalate, sticky escalate on hard-phrase SMS, invariant 5 held vs live model |
+| PR4 | VIG-9 | checkin-service (brain) + supabase-server | ✅ merged | Claude (guardrail clone) | merged (PR #7) | Live smoke 15/15 (real Supabase + Claude); re-smoked green after env fix incl. red-chip-mid-baseline case |
 | PR5 | VIG-10 | mock FHIR EMR + enroll + routes + smoke-api | 🟡 | orchestrator session | — | **start fixture-first NOW** (`lib/emr.ts` + smoke-api skeleton are PR4-independent); wire routes when PR4 lands |
 | PR6 | VIG-11 | Patient text channel (MOCK web thread) + enroll UI | ⚪ | — | — | needs PR4; real SMS = roadmap (A2P blocked) |
-| PR7 | VIG-12 | Notifier + nurse paging | ⚪ | — | — | needs PR4 |
+| PR7 | VIG-12 | Notifier + nurse paging | 🟡 | Claude (guardrail clone) | `pr07-notifier` | unblocked by PR4; in progress. Post-pivot: Console+MockVoalte+alert rows are the demo path; Twilio nurse-SMS adapter env-gated stretch |
 | PR8 | VIG-13 | Handoff/SBAR + transcript | ⚪ | — | — | needs PR4 |
 | PR9 | VIG-14 | Demo driver + cellulitis scripts | ⚪ | — | — | needs PR6,7 |
 | PR10 | VIG-15 | Mock EMR UI (dashboard + record tabs) | 🟡 | **Charumathi** | — | **start fixture-first NOW** against frozen types; swap to real APIs when PR5/7/8 land |
@@ -61,6 +61,7 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 ## Build log (newest first)
 ### 2026-07-18
 - **DEMO CHANNEL PIVOT (Pranav):** real SMS blocked on A2P/toll-free verification → **text mocked as an in-app web thread**; **ElevenLabs voice call promoted to the REQUIRED live channel** (Twilio Voice works now). Updated VIG-11 (mock web thread), VIG-16 (required), VIG-17 (Voice-only) + ARCHITECTURE. The escalation-call "wow" no longer depends on carrier SMS.
+- **PR4 MERGED (#7); next-wave split (updated post-pivot).** VIG-9 → Done (re-smoked green post env-fix, incl. red-chip-mid-baseline escalation). Assignments: guardrail session → **VIG-12/PR7 notifier** (In Progress, `pr07-notifier`), then VIG-13/PR8 · orchestrator → **VIG-11/PR6 = MOCK web thread + enroll UI** (pivot supersedes the earlier Twilio-SMS guidance on that ticket) or **VIG-16 call wiring** once VIG-18 completes · Charumathi → VIG-10 + VIG-15 · Pranav → VIG-18 (ElevenLabs agent + import TF number), Vercel env vars.
 - **PR4 built → PR #7 open (guardrail-clone session).** `lib/checkin-service.ts` (`processCheckin` — baseline accumulation, protocol freeze via MockCds, deterministic SMS→answer mapping, model funnel, guardrail floor, cadence 30/15/10, one agent row per question w/ CheckinTrace) + `lib/supabase-server.ts` (server-only boundary). **Verified live:** 15/15 smoke vs real Supabase + real Claude — incl. a live-model turn where cited-but-unconfirmed flags were discarded (invariant 5). Found + fixed: severityHistory double-seeded baseline; found: env URL gotcha (see decisions). Gates green. Once #7 merges: PR5 routes wire up, PR7 notifier + PR8 handoff unblock.
 - **PR #6 merged (cadence 30/15/10) + WORK SPLIT assigned** (3 sessions + Pranav-on-Twilio): guardrail-clone session → **VIG-9/PR4** (In Progress, branch `pr04-checkin-service`) · orchestrator session → **VIG-10/PR5 fixture-first** (`lib/emr.ts` + smoke-api skeleton now; routes when PR4 lands — guidance commented on the ticket) · Charumathi → **VIG-15/PR10 fixture-first** (guidance commented). Next picks after PR4: VIG-12 (notifier), VIG-13 (handoff); VIG-11 (SMS) when Twilio verify clears.
 - **Cadence decision + Linear graph wiring (guardrail-clone session):** Pranav decided **escalate cadence = 10 min**; opened **PR #6** (one-line `lib/cds.ts` fix, all gates + updated integration smoke green) — flagged for Charumathi since it's her PR1 file. Also wired the 7 missing `blockedBy` relations in Linear (VIG-10/12/13←VIG-9 · VIG-14←VIG-11+12 · VIG-15←VIG-12+13) so the board shows the true build order; decision + guidance commented on VIG-9.
@@ -78,6 +79,6 @@ Legend: ✅ done · 🟡 in progress · ⛔ blocked · ⚪ todo
 - **Scaffold done** (Next 15.5.20 / React 19.1.0) + deps installed (uncommitted, rides on PR0 branch).
 
 ## Now / Next / Blocked
-- **NOW:** **PR4 (checkin-service) is the critical path — unblocked, unclaimed.** PR1+2+3 merged, main fully green (build + both suites + 8/8 integration smoke). Twilio (VIG-17: TF SMS verification pending) + ElevenLabs (VIG-18) setup continue in parallel.
+- **NOW:** PR7 notifier (guardrail session) · PR6 mock web thread (orchestrator) · PR5+PR10 (Charumathi) · VIG-18 ElevenLabs setup + Vercel env vars (Pranav). Freeze 15:45 — demo-critical order post-pivot: mock thread → notifier → driver → UI → **voice call (now REQUIRED)**; handoff fits between.
 - **NEXT:** PR5 (EMR/enroll/routes/smoke-api) right behind PR4; then PR6 SMS (needs Twilio verify), PR7 notifier, PR8 handoff. Add env vars in the Vercel dashboard.
 - **BLOCKED:** PR6 (SMS) & PR11 (call) on Twilio/ElevenLabs setup (VIG-17/18) — do the account setup in parallel with coding.
