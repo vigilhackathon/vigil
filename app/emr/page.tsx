@@ -21,7 +21,7 @@ import {
 } from "./_ui";
 
 const COLUMNS =
-  "id,name,age,sex,complaint,esi,tier,review_now,tier_reason,trend,cadence_minutes,next_checkin_due,last_response_at,ack_at,ack_by,created_at";
+  "id,name,age,sex,complaint,esi,tier,review_now,suggested_action,tier_reason,trend,cadence_minutes,next_checkin_due,last_response_at,ack_at,ack_by,created_at";
 
 export default function DashboardPage() {
   const [rows, setRows] = useState<PatientRow[]>([]);
@@ -182,10 +182,17 @@ export default function DashboardPage() {
                       monitoring lost — eyeball check
                     </span>
                   )}
-                  {p.review_now && p.tier !== "escalate" && (
-                    <span className="rounded bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
-                      review now
+                  {p.suggested_action === "calling" && p.tier !== "escalate" ? (
+                    <span className="rounded bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-800 dark:bg-sky-900/50 dark:text-sky-300">
+                      📞 calling to verify
                     </span>
+                  ) : (
+                    p.review_now &&
+                    p.tier !== "escalate" && (
+                      <span className="rounded bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
+                        review now
+                      </span>
+                    )
                   )}
                   {p.ack_at && (
                     <span className="text-[10px] text-emerald-600">acknowledged</span>
