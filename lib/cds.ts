@@ -29,7 +29,7 @@ const CELLULITIS: CdsProtocol = {
   complaint: "cellulitis",
   // routine = recheck 30m, watch = recheck 15m, escalate = alert/call now (kept short as a
   // safety re-check while the escalation is handled).
-  cadenceMinutes: { routine: 30, watch: 15, escalate: 5 },
+  cadenceMinutes: { routine: 30, watch: 15, escalate: 10 },
 
   baseline: [
     { id: "b_pain", kind: "scale", text: "How bad is the pain right now, from 0 to 10?" },
