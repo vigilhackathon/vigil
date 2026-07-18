@@ -62,7 +62,7 @@ const CELLULITIS: CdsProtocol = {
     {
       id: "q_pop",
       kind: "chips",
-      text: "Does the pain feel worse than the skin looks, or is it getting worse fast?",
+      text: "Is the pain much worse than the skin looks?",
       options: [
         { label: "Yes", value: "yes", flags: ["R_POP"] },
         { label: "No", value: "no" },
@@ -71,7 +71,7 @@ const CELLULITIS: CdsProtocol = {
     {
       id: "q_fever",
       kind: "chips",
-      text: "Do you have a fever or chills right now?",
+      text: "Any fever or chills right now?",
       options: [
         { label: "Yes", value: "yes", flags: ["R_FEVER"] },
         { label: "No", value: "no" },
@@ -98,7 +98,7 @@ const CELLULITIS: CdsProtocol = {
     {
       id: "q_systemic",
       kind: "chips",
-      text: "Do you feel faint, confused, or too sick to stand?",
+      text: "Feeling faint, confused, or very unwell?",
       options: [
         { label: "Yes", value: "yes", flags: ["R_SYSTEMIC"] },
         { label: "No", value: "no" },
@@ -107,7 +107,7 @@ const CELLULITIS: CdsProtocol = {
     {
       id: "q_warmth",
       kind: "chips",
-      text: "Is the area more warm to the touch than before?",
+      text: "Is the area warmer than before?",
       options: [
         { label: "Yes", value: "yes", watch: ["W_WARMTH"] },
         { label: "No", value: "no" },

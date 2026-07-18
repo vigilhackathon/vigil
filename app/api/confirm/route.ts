@@ -12,6 +12,16 @@ const BodySchema = z.object({
   phone: z.string().min(7).max(20).optional(),
 });
 
+/** Best-effort E.164 so the escalation call can actually dial (US-default, keeps an existing +). */
+function toE164(raw: string): string {
+  const t = raw.trim();
+  if (t.startsWith("+")) return "+" + t.slice(1).replace(/\D/g, "");
+  const digits = t.replace(/\D/g, "");
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+  return digits ? `+${digits}` : raw;
+}
+
 export async function POST(req: Request): Promise<Response> {
   let body: z.infer<typeof BodySchema>;
   try {
@@ -49,7 +59,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const update: { baseline: Baseline; phone?: string } = { baseline };
-  if (body.phone) update.phone = body.phone;
+  if (body.phone) update.phone = toE164(body.phone);
 
   const { error: updErr } = await db.from("patients").update(update).eq("id", body.patientId);
   if (updErr) return Response.json({ error: updErr.message } satisfies ApiError, { status: 500 });

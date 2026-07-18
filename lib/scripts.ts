@@ -102,12 +102,16 @@ export const DEMO_SEED_ROWS: Omit<DemoPatientSeed, "slug" | "dob" | "phone">[] =
 ];
 
 // --- Beats -----------------------------------------------------------------------------------
-// Hero (Chen): T0 baseline 4/10, clean screen → T+1 redness a little past the line (W_SPREAD,
-// Δ1) = quiet WATCH → T+2 spreading fast + new fever + red streaks (R_RAPID + R_FEVER +
-// R_STREAK, 4→5→7) = ESCALATE.
+// "ALWAYS CALL FIRST" flow. Hero (Chen):
+//   Beat 0  baseline 4/10, clean screen                                → ROUTINE
+//   Beat 1  redness a little past the line (W_SPREAD, Δ1)              → WATCH (text)
+//   Beat 2  spreading fast + new fever + red streaks (RED in text)     → WATCH + 📞 CALL PLACED
+//           (concern caught in text → VIGIL calls to verify; nurse NOT paged yet)
+//   Beat 3  call_result confirms the red flags                        → ESCALATE + nurse paged
 //
 // Dave's "contrast holds steady" beats were RETIRED (2026-07-18) — he is now display-only
-// with a non-cellulitis complaint, so he has no scripted beats. Chen is the only driven arc.
+// with a non-cellulitis complaint (low back pain), so he has no scripted beats. Chen is the
+// only driven arc.
 
 export const SCRIPTS: Record<string, ScriptedBeat[]> = {
   chen: [
@@ -118,7 +122,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         type: "answers",
         answers: { b_pain: 4, b_landmark: "knee", b_screen: ["none"] },
       },
-      patientAck: "Thanks, that's everything for now. I'll check in again soon.",
+      patientAck: "Got it, thanks.",
       expectedTier: "routine",
     },
     {
@@ -128,7 +132,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         type: "answers",
         answers: { q_pain: 5, q_spread: "past", q_fever: "no" },
       },
-      patientAck: "Thanks for the update — I've noted the redness moved a little past the line.",
+      patientAck: "Thanks — noted the redness moved a bit.",
       expectedTier: "watch",
     },
     {
@@ -136,11 +140,26 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
       beatIndex: 2,
       event: {
         type: "answers",
-        // Structured escalation: rapid spread + new fever + red streaks (screen chip re-asked).
+        // RED flags confirmed in the TEXT: rapid spread + new fever + red streaks. Under
+        // call-first this HOLDS at WATCH and places the verification call — no page yet.
         answers: { q_pain: 7, q_spread: "fast", q_fever: "yes", b_screen: ["streak"] },
       },
-      // The service appends the mandatory front-desk line for confirmed red flags.
-      patientAck: "Thank you for telling me right away.",
+      patientAck: "Thanks — a nurse will call you shortly to check in.",
+      expectedTier: "watch",
+    },
+    {
+      slug: "chen",
+      beatIndex: 3,
+      event: {
+        // The verification call comes back. Live, VIG-16's post-call webhook posts this; in the
+        // scripted demo the driver injects it. Structured yes/no confirmations map to the same
+        // red flags → guardrail escalates → nurse paged. THIS is the escalation moment.
+        type: "call_result",
+        transcript:
+          "On the call the patient said the redness is spreading quickly up the shin, a new fever started about an hour ago, and there are red streaks past the knee. She sounds increasingly unwell.",
+        structured: { q_spread: "fast", q_fever: "yes" },
+      },
+      patientAck: "Thanks for talking just now.",
       expectedTier: "escalate",
     },
   ],
