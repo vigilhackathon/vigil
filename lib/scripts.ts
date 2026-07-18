@@ -50,9 +50,13 @@ export const DEMO_SEED_ROWS: Omit<DemoPatientSeed, "slug" | "dob" | "phone">[] =
 ];
 
 // --- Beats -----------------------------------------------------------------------------------
-// Hero (Chen): T0 baseline 4/10, clean screen → T+1 redness a little past the line (W_SPREAD,
-// Δ1) = quiet WATCH → T+2 spreading fast + new fever + red streaks (R_RAPID + R_FEVER +
-// R_STREAK, 4→5→7) = ESCALATE. Contrast (Dave): steady 6/10, every screen negative — HOLDS.
+// "ALWAYS CALL FIRST" flow. Hero (Chen):
+//   Beat 0  baseline 4/10, clean screen                                → ROUTINE
+//   Beat 1  redness a little past the line (W_SPREAD, Δ1)              → WATCH (text)
+//   Beat 2  spreading fast + new fever + red streaks (RED in text)     → WATCH + 📞 CALL PLACED
+//           (concern caught in text → VIGIL calls to verify; nurse NOT paged yet)
+//   Beat 3  call_result confirms the red flags                        → ESCALATE + nurse paged
+// Contrast (Dave): steady, every screen negative — HOLDS routine throughout.
 
 export const SCRIPTS: Record<string, ScriptedBeat[]> = {
   chen: [
@@ -81,11 +85,27 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
       beatIndex: 2,
       event: {
         type: "answers",
-        // Structured escalation: rapid spread + new fever + red streaks (screen chip re-asked).
+        // RED flags confirmed in the TEXT: rapid spread + new fever + red streaks. Under
+        // call-first this HOLDS at WATCH and places the verification call — no page yet.
         answers: { q_pain: 7, q_spread: "fast", q_fever: "yes", b_screen: ["streak"] },
       },
-      // The service appends the mandatory front-desk line for confirmed red flags.
-      patientAck: "Thank you for telling me right away.",
+      patientAck:
+        "Thanks for telling me — the care team will give you a quick call in the next few minutes to check in.",
+      expectedTier: "watch",
+    },
+    {
+      slug: "chen",
+      beatIndex: 3,
+      event: {
+        // The verification call comes back. Live, VIG-16's post-call webhook posts this; in the
+        // scripted demo the driver injects it. Structured yes/no confirmations map to the same
+        // red flags → guardrail escalates → nurse paged. THIS is the escalation moment.
+        type: "call_result",
+        transcript:
+          "On the call the patient said the redness is spreading quickly up the shin, a new fever started about an hour ago, and there are red streaks past the knee. She sounds increasingly unwell.",
+        structured: { q_spread: "fast", q_fever: "yes" },
+      },
+      patientAck: "Thanks for talking with me just now — please keep your phone nearby.",
       expectedTier: "escalate",
     },
   ],

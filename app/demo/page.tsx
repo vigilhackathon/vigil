@@ -20,6 +20,7 @@ interface AdvanceResult {
   expectedTier?: Tier;
   tierMatches?: boolean;
   patientAck?: string;
+  escalateToCall?: boolean;
   error?: string;
 }
 
@@ -79,7 +80,7 @@ export default function DemoDriver() {
       }
       if (out.tier) setLastTier((t) => ({ ...t, [slug]: out.tier! }));
       append(
-        `${slug} beat ${beatIndex} → ${out.tier?.toUpperCase()}${out.tierMatches ? "" : ` ⚠️ EXPECTED ${out.expectedTier}`} · "${out.patientAck}"`,
+        `${slug} beat ${beatIndex} → ${out.tier?.toUpperCase()}${out.escalateToCall ? " · 📞 CALL PLACED" : ""}${out.tierMatches ? "" : ` ⚠️ EXPECTED ${out.expectedTier}`} · "${out.patientAck}"`,
       );
     } finally {
       setBusy(null);
@@ -145,7 +146,7 @@ export default function DemoDriver() {
               >
                 {busy === `${p.slug}-${beat.beatIndex}`
                   ? "Sending…"
-                  : `Beat ${beat.beatIndex}: ${beat.beatIndex === 0 ? "baseline" : ""} → ${beat.expectedTier}`}
+                  : `Beat ${beat.beatIndex}: ${beat.event.type === "call_result" ? "📞 call result" : beat.beatIndex === 0 ? "baseline" : "text"} → ${beat.expectedTier}`}
               </button>
             ))}
           </div>
