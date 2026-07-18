@@ -45,7 +45,7 @@ export default function PatientRecordPage() {
       supabaseBrowser()
         .from("patients")
         .select(
-          "id,name,age,sex,complaint,esi,tier,review_now,tier_reason,trend,cadence_minutes,next_checkin_due,last_response_at,ack_at,ack_by,created_at,protocol",
+          "id,name,age,sex,complaint,esi,triage_note,vitals,tier,review_now,tier_reason,trend,cadence_minutes,next_checkin_due,last_response_at,ack_at,ack_by,created_at,protocol",
         )
         .eq("id", id)
         .maybeSingle(),
@@ -137,6 +137,40 @@ export default function PatientRecordPage() {
               )}
             </div>
           </header>
+
+          {/* ED triage note — captured at registration (display-only intake data). */}
+          {patient.triage_note && (
+            <section className="rounded-lg border border-neutral-200 bg-white p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Triage note
+              </h2>
+              <p className="leading-relaxed text-neutral-700 dark:text-neutral-300">{patient.triage_note}</p>
+            </section>
+          )}
+
+          {/* Vitals at triage. */}
+          {patient.vitals && (
+            <section className="rounded-lg border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Vitals (at triage)
+              </h2>
+              <dl className="grid grid-cols-3 gap-x-4 gap-y-2 text-sm sm:grid-cols-6">
+                {[
+                  { k: "Temp", v: `${patient.vitals.temp_c}°C` },
+                  { k: "HR", v: `${patient.vitals.hr}` },
+                  { k: "BP", v: patient.vitals.bp },
+                  { k: "RR", v: `${patient.vitals.rr}` },
+                  { k: "SpO₂", v: patient.vitals.spo2 },
+                  { k: "Pain", v: `${patient.vitals.pain}/10` },
+                ].map(({ k, v }) => (
+                  <div key={k}>
+                    <dt className="text-[10px] uppercase tracking-wide text-neutral-400">{k}</dt>
+                    <dd className="font-medium tabular-nums">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
 
           {/* Trace card — the guardrail's reasoning, human-readable. */}
           <section className="rounded-lg border border-neutral-200 bg-white p-3 text-sm dark:border-neutral-800 dark:bg-neutral-900">

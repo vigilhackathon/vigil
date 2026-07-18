@@ -2,6 +2,7 @@
 // (Underscore prefix → not a route.) Pure functions; no I/O.
 
 import type { Tier } from "@/lib/types";
+import type { Vitals } from "@/lib/scripts";
 
 /** The anon-readable patients columns the board renders (RLS: anon can select patients). */
 export interface PatientRow {
@@ -11,6 +12,8 @@ export interface PatientRow {
   sex: string | null;
   complaint: string | null;
   esi: number;
+  triage_note: string | null;
+  vitals: Vitals | null;
   tier: Tier;
   review_now: boolean;
   tier_reason: string | null;
