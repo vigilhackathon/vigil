@@ -15,12 +15,7 @@
 
 import { MockCds } from "./cds";
 import { runCheckin } from "./agent";
-import {
-  evaluate,
-  parseYesNo,
-  validateNextQuestionId,
-  type AnswerMap,
-} from "./guardrail";
+import { evaluate, parseYesNo, type AnswerMap } from "./guardrail";
 import { notifyEscalation } from "./notifier";
 import { buildCallContext, placeEscalationCall } from "./voice-call";
 import { supabaseServer } from "./supabase-server";
@@ -166,6 +161,7 @@ function questionById(protocol: CdsProtocol, id: string | null): Question | null
 const ACK_CALLING = "Thanks — a nurse will call you shortly to check in.";
 const ACK_ROUTINE = "Got it, thanks.";
 const ACK_POST_CALL = "Thanks for talking just now.";
+const ACK_SCREEN_DONE = "Thanks — all set for now. I'll check in again a bit later.";
 
 /**
  * Severity trajectory incl. baseline, without double-counting the baseline reading (the
@@ -308,20 +304,42 @@ export async function processCheckin(
     priorStableCycles: patient.stable_cycles,
   });
 
-  // 9. Next question.
+  // 9. Next question. The TEXT is a SHORT SCREEN — at most TEXT_SCREEN_MAX quick questions per
+  //    check-in round (a round = since the last timer/scheduled check-in), re-asked each round.
+  //    Detailed probing is the voice call's job, not the text's. (Overridden to null below when
+  //    a flag triggers the call — the call takes over the follow-up.)
+  const TEXT_SCREEN_MAX = 4;
   let nextQuestion: Question | null;
   if (phase === "baseline") {
     nextQuestion = nextBaselineQuestion(protocol, baseline.answers);
   } else {
-    const answeredBankIds = [
-      ...priorTraces.flatMap((t) => (t.event.type === "answers" ? Object.keys(t.event.answers) : [])),
-      ...Object.keys(eventAnswers),
-    ].filter((id) => protocol.bank.some((q) => q.id === id));
-    const vq = validateNextQuestionId(protocol, model?.next_question_id ?? null, answeredBankIds);
-    nextQuestion =
-      vq.id === "CUSTOM" && model?.custom_question
-        ? { id: "CUSTOM", kind: "free", text: model.custom_question }
-        : questionById(protocol, vq.id);
+    const bankIds = new Set(protocol.bank.map((q) => q.id));
+    // Bank questions already asked THIS round (walk back to the round-starting timer trace).
+    const askedThisRound = new Set<string>();
+    for (let i = priorTraces.length - 1; i >= 0; i--) {
+      const t = priorTraces[i];
+      if (t.questionAskedId && bankIds.has(t.questionAskedId)) askedThisRound.add(t.questionAskedId);
+      if (t.event.type === "timer") break; // round boundary
+    }
+    // The TEXT screen is yes/no-friendly ONLY: the 0–10 scale + true yes/no chips. Multi-option
+    // chips (e.g. "a lot / a little / no") and free text don't parse from a typed reply — those
+    // are the voice call's territory.
+    const isYesNo = (q: Question) =>
+      q.kind === "chips" &&
+      q.options.some((o) => o.value === "yes") &&
+      q.options.some((o) => o.value === "no");
+    const screenBank = protocol.bank.filter((q) => q.kind === "scale" || isYesNo(q));
+    if (askedThisRound.size >= TEXT_SCREEN_MAX) {
+      nextQuestion = null; // short screen complete for this round
+    } else {
+      // Honor the model's pick if it's a not-yet-asked screen question; else next unasked one.
+      const pick = model?.next_question_id;
+      const validPick =
+        pick && bankIds.has(pick) && !askedThisRound.has(pick) && screenBank.some((q) => q.id === pick)
+          ? pick
+          : (screenBank.find((q) => !askedThisRound.has(q.id))?.id ?? null);
+      nextQuestion = questionById(protocol, validPick);
+    }
   }
 
   // 10. TWO-STAGE ESCALATION — "always call first" (human decision 2026-07-18).
@@ -356,6 +374,11 @@ export async function processCheckin(
     committedTier = decision.tierFinal;
   }
 
+  // Flag caught in the text → STOP texting; the voice call takes over the follow-up questions.
+  if (callRequested) nextQuestion = null;
+  // Short screen finished with nothing flaggable → end this round (wait for the next check-in).
+  const screenComplete = phase === "checkin" && !callRequested && !isCallResult && nextQuestion === null;
+
   // 11. Patient ack. Scripted wording wins; a call-triggering turn gets a deterministic ack
   //     (guarantees no "front desk", always announces the call); otherwise model / neutral copy.
   const kickoffAck =
@@ -367,6 +390,8 @@ export async function processCheckin(
     patientAck = ACK_CALLING;
   } else if (isCallResult) {
     patientAck = ACK_POST_CALL;
+  } else if (screenComplete) {
+    patientAck = ACK_SCREEN_DONE;
   } else if (event.type === "timer") {
     patientAck = kickoffAck;
   } else {
