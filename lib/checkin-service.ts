@@ -22,6 +22,7 @@ import {
   type AnswerMap,
 } from "./guardrail";
 import { notifyEscalation } from "./notifier";
+import { buildCallContext, placeEscalationCall } from "./voice-call";
 import { supabaseServer } from "./supabase-server";
 import type {
   Baseline,
@@ -49,6 +50,7 @@ interface PatientRow {
   sex: string | null;
   complaint: string | null;
   esi: number;
+  phone: string | null;
   channel: Channel;
   protocol: CdsProtocol | null;
   baseline: Baseline | null;
@@ -193,7 +195,7 @@ export async function processCheckin(
   // 1. Load patient.
   const { data: patientData, error: pErr } = await db
     .from("patients")
-    .select("id, name, age, sex, complaint, esi, channel, protocol, baseline, tier, review_now, stable_cycles")
+    .select("id, name, age, sex, complaint, esi, phone, channel, protocol, baseline, tier, review_now, stable_cycles")
     .eq("id", patientId)
     .maybeSingle();
   if (pErr) throw new Error(`patients read failed: ${pErr.message}`);
@@ -430,6 +432,42 @@ export async function processCheckin(
       });
     } catch (e) {
       console.error("[notifier] failed (check-in continues):", e);
+    }
+  }
+
+  // 15. Escalation voice call (VIG-16): on a deterministic escalate that is not itself a call
+  //     result, VIGIL calls the patient to gather richer detail. The transcript + yes/no
+  //     confirmations re-enter the guardrail via /api/call-result. Env-gated + fire-and-forget:
+  //     a call failure (or unconfigured env) must never 500 a check-in, and a call_result event
+  //     never triggers another call (no loops).
+  if (decision.tierFinal === "escalate" && event.type !== "call_result") {
+    try {
+      const callReason =
+        decision.confirmedFlags.map((f) => protocol.red[f] ?? protocol.watch[f] ?? f).join("; ") ||
+        "your recent check-in suggested things may be changing";
+      const res = await placeEscalationCall(
+        patient.phone,
+        buildCallContext({
+          patientId,
+          name: patient.name,
+          protocol,
+          severityHistory: trace.severityHistory,
+          confirmedFlags: decision.confirmedFlags,
+          reason: callReason,
+        }),
+      );
+      if (res.ok) {
+        await db.from("messages").insert({
+          patient_id: patientId,
+          role: "system",
+          content: "VIGIL placed an escalation call to the patient.",
+          trace: { kind: "call", conversationId: res.conversationId },
+        });
+      } else {
+        console.warn("[voice-call] not placed:", res.detail);
+      }
+    } catch (e) {
+      console.error("[voice-call] failed (check-in continues):", e);
     }
   }
 
