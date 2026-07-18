@@ -60,7 +60,13 @@ export async function POST(req: Request): Promise<Response> {
           // Protocol frozen up front + thread identity pre-confirmed: the phone opens straight
           // into the conversation; beat 0 IS the baseline.
           protocol: MockCds.author(p.complaint),
-          baseline: { complete: false, answers: { __dob_confirmed: "yes" }, severityBaseline: 0 },
+          // Baseline pre-complete (triage already did intake) + identity pre-confirmed, so
+          // opening the thread jumps straight into the interval check-in screen.
+          baseline: {
+            complete: true,
+            answers: { __dob_confirmed: "yes", b_pain: 5, b_landmark: "knee", b_screen: ["none"] },
+            severityBaseline: 5,
+          },
         })
         .select("id")
         .single();
