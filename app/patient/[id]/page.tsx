@@ -26,7 +26,7 @@ interface ThreadState {
 
 // Short, SMS-length consent. No "front desk" framing; a real 911 safety net instead.
 const CONSENT_BUBBLE =
-  "Hi, it's VIGIL from the ED care team. I'll text a couple quick questions while you wait. If it's an emergency, call 911. Reply STOP to opt out.";
+  "Hi, it's VIGIL from the ED care team. I'll text a couple quick questions while you wait. Reply STOP to opt out.";
 
 /** Normalize a typed date ("4/2/1992", "1992-04-02") to YYYY-MM-DD, or null. */
 function toISODate(s: string): string | null {
