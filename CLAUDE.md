@@ -2,6 +2,14 @@
 
 VIGIL monitors ED waiting-room patients (ESI 3–5) between triage and being seen: structured agent check-ins → deterministic guardrail → Routine/Watch/Escalate → nurse Acknowledge → SBAR interval handoff. Full spec, contracts, prompts, protocol configs, timeline, and test cases live in **PLAN.md** — read the relevant section before building; do not invent alternative designs.
 
+> **⚠️ v4 PIVOT — [`ARCHITECTURE.md`](ARCHITECTURE.md) is the current source of truth; read it before this file.**
+> Changed in v4: channel = **Twilio SMS** (native Messages app; no web patient page) · hero = **cellulitis** · clinical
+> content = **mock CDS authors the protocol per visit** (not hardcoded ABDO/BACK) · intake = **mock FHIR EMR** lookup ·
+> voice = **escalation phone call** (ElevenLabs Conversational AI + Twilio Voice) · nurse surface = **mock EMR UI**
+> (ER Dashboard + Patient Record tabs) · after ack the agent stays **silent** (no patient banner). The **safety
+> invariants, guardrail rules, cadence math, and SDK usage below remain in force.** Work is tracked in Linear
+> (**VIG-5 … VIG-16** = PR0 … PR11), one PR per ticket, squash-merged to `main` with a checkpoint before each merge.
+
 **Context that shapes every decision:** judged live at a hackathon (Execution 30%). A small finished thing beats a big broken thing. Prefer the simplest implementation that passes the test gate.
 
 ## Commands

@@ -1,5 +1,12 @@
 # VIGIL — The Agent That Watches the Waiting Room
 
+> **⚠️ v4 PIVOT — read [`ARCHITECTURE.md`](ARCHITECTURE.md) first.** The channel (now **Twilio SMS**, not a web page),
+> hero case (now **cellulitis**, not ABDO), clinical-content source (now a **mock CDS** that authors the protocol per
+> visit), intake (now **mock FHIR EMR** lookup), voice (now an **escalation phone call** via ElevenLabs + Twilio Voice),
+> and nurse surface (now a **mock EMR UI**) all changed. **Everything below about the *safety model, guardrail tier
+> rules, cadence math, SDK usage, and Q&A* is still valid and authoritative** — only the pivoted areas above are
+> superseded by ARCHITECTURE.md. Live tickets: Linear **VIG-5 … VIG-16**.
+
 **v3.2 — FINAL: Pranav's v3.1 (3 Codex reviews) merged with Charumathi's plan. Sat Jul 18, 2026 (event day). Build 10:30–17:00, submit 17:00 sharp.**
 Event: The Future of Agentic AI in Healthcare (Abridge × Anthropic × Lightspeed), Shack15 SF. Judging R1: ~3-min live demo + 1–2 min Q&A (Abridge clinicians). Weights: Execution 30 / Creativity 25 / Impact 20 / Technical 20. Banned: dashboard-as-main-feature, basic chatbots, Streamlit, basic RAG. Repo public; demo only event-hours work.
 
