@@ -67,7 +67,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         type: "answers",
         answers: { b_pain: 4, b_landmark: "knee", b_screen: ["none"] },
       },
-      patientAck: "Thanks, that's everything for now. I'll check in again soon.",
+      patientAck: "Got it, thanks.",
       expectedTier: "routine",
     },
     {
@@ -77,7 +77,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         type: "answers",
         answers: { q_pain: 5, q_spread: "past", q_fever: "no" },
       },
-      patientAck: "Thanks for the update — I've noted the redness moved a little past the line.",
+      patientAck: "Thanks — noted the redness moved a bit.",
       expectedTier: "watch",
     },
     {
@@ -89,8 +89,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         // call-first this HOLDS at WATCH and places the verification call — no page yet.
         answers: { q_pain: 7, q_spread: "fast", q_fever: "yes", b_screen: ["streak"] },
       },
-      patientAck:
-        "Thanks for telling me — the care team will give you a quick call in the next few minutes to check in.",
+      patientAck: "Thanks — a nurse will call you shortly to check in.",
       expectedTier: "watch",
     },
     {
@@ -105,7 +104,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
           "On the call the patient said the redness is spreading quickly up the shin, a new fever started about an hour ago, and there are red streaks past the knee. She sounds increasingly unwell.",
         structured: { q_spread: "fast", q_fever: "yes" },
       },
-      patientAck: "Thanks for talking with me just now — please keep your phone nearby.",
+      patientAck: "Thanks for talking just now.",
       expectedTier: "escalate",
     },
   ],
@@ -117,7 +116,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         type: "answers",
         answers: { b_pain: 6, b_landmark: "below_knee", b_screen: ["none"] },
       },
-      patientAck: "Thanks, that's everything for now. I'll check in again soon.",
+      patientAck: "Got it, thanks.",
       expectedTier: "routine",
     },
     {
@@ -127,7 +126,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         type: "answers",
         answers: { q_pain: 6, q_spread: "same", q_fever: "no" },
       },
-      patientAck: "Thanks — noted, no changes.",
+      patientAck: "Thanks, noted.",
       expectedTier: "routine",
     },
     {
@@ -137,7 +136,7 @@ export const SCRIPTS: Record<string, ScriptedBeat[]> = {
         type: "answers",
         answers: { q_pain: 5, q_warmth: "no", q_skin: "no" },
       },
-      patientAck: "Thanks — noted, no changes.",
+      patientAck: "Thanks, noted.",
       expectedTier: "routine",
     },
   ],
