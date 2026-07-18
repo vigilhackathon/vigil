@@ -314,13 +314,16 @@ export async function processCheckin(
     nextQuestion = nextBaselineQuestion(protocol, baseline.answers);
   } else {
     const bankIds = new Set(protocol.bank.map((q) => q.id));
-    // Bank questions already asked THIS round (walk back to the round-starting timer trace).
+    // Bank questions handled THIS round (walk back to the round-starting timer trace), PLUS
+    // anything answered in this very event (batched driver beats answer several at once) — so a
+    // just-answered question is never re-asked.
     const askedThisRound = new Set<string>();
     for (let i = priorTraces.length - 1; i >= 0; i--) {
       const t = priorTraces[i];
       if (t.questionAskedId && bankIds.has(t.questionAskedId)) askedThisRound.add(t.questionAskedId);
       if (t.event.type === "timer") break; // round boundary
     }
+    for (const k of Object.keys(eventAnswers)) if (bankIds.has(k)) askedThisRound.add(k);
     // The TEXT screen is yes/no-friendly ONLY: the 0–10 scale + true yes/no chips. Multi-option
     // chips (e.g. "a lot / a little / no") and free text don't parse from a typed reply — those
     // are the voice call's territory.

@@ -48,6 +48,26 @@ const CELLULITIS: CdsProtocol = {
   ],
 
   bank: [
+    // Lead the interval TEXT screen with two quick yes/no checks (the hero demo answers
+    // no → yes; the "yes" to spreading is a red flag that triggers the verification call).
+    {
+      id: "q_pain_inc",
+      kind: "chips",
+      text: "Has your pain increased since I last checked?",
+      options: [
+        { label: "Yes", value: "yes", watch: ["W_PAIN"] },
+        { label: "No", value: "no" },
+      ],
+    },
+    {
+      id: "q_ankle",
+      kind: "chips",
+      text: "Has the redness spread past your ankle?",
+      options: [
+        { label: "Yes", value: "yes", flags: ["R_RAPID"] },
+        { label: "No", value: "no" },
+      ],
+    },
     { id: "q_pain", kind: "scale", text: "How bad is the pain right now, 0 to 10?" },
     {
       id: "q_spread",
@@ -130,6 +150,7 @@ const CELLULITIS: CdsProtocol = {
 
   // flagId -> nurse-facing label. Watch tier.
   watch: {
+    W_PAIN: "Patient reports increasing pain",
     W_SPREAD: "Redness spread past the marked landmark",
     W_WARMTH: "Increased warmth over the area",
   },

@@ -102,62 +102,44 @@ export const DEMO_SEED_ROWS: Omit<DemoPatientSeed, "slug" | "dob" | "phone">[] =
 ];
 
 // --- Beats -----------------------------------------------------------------------------------
-// "ALWAYS CALL FIRST" flow. Hero (Chen):
-//   Beat 0  baseline 4/10, clean screen                                → ROUTINE
-//   Beat 1  redness a little past the line (W_SPREAD, Δ1)              → WATCH (text)
-//   Beat 2  spreading fast + new fever + red streaks (RED in text)     → WATCH + 📞 CALL PLACED
-//           (concern caught in text → VIGIL calls to verify; nurse NOT paged yet)
-//   Beat 3  call_result confirms the red flags                        → ESCALATE + nurse paged
+// SCRIPTED HERO (Chen) — two texts, then the call. (You can also drive this live by opening
+// Chen's thread and typing the replies — the beats are the click-through fallback.)
+//   Beat 0  "Has your pain increased?"  → NO                          → ROUTINE
+//   Beat 1  "Has the redness spread past your ankle?" → YES (R_RAPID) → WATCH + 📞 CALL PLACED
+//           (the "yes" is a red flag → VIGIL calls to verify; nurse NOT paged yet)
+//   Beat 2  call_result confirms on the call                         → ESCALATE + nurse paged
 //
 // Dave's "contrast holds steady" beats were RETIRED (2026-07-18) — he is now display-only
-// with a non-cellulitis complaint (low back pain), so he has no scripted beats. Chen is the
-// only driven arc.
+// with a non-cellulitis complaint (low back pain). Chen is the only driven arc.
 
 export const SCRIPTS: Record<string, ScriptedBeat[]> = {
   chen: [
     {
       slug: "chen",
       beatIndex: 0,
-      event: {
-        type: "answers",
-        answers: { b_pain: 4, b_landmark: "knee", b_screen: ["none"] },
-      },
+      event: { type: "answers", answers: { q_pain_inc: "no" } }, // "Has your pain increased?" → No
       patientAck: "Got it, thanks.",
       expectedTier: "routine",
     },
     {
       slug: "chen",
       beatIndex: 1,
-      event: {
-        type: "answers",
-        answers: { q_pain: 5, q_spread: "past", q_fever: "no" },
-      },
-      patientAck: "Thanks — noted the redness moved a bit.",
+      // "Has the redness spread past your ankle?" → Yes (R_RAPID). Call-first: HOLD at watch,
+      // place the verification call — no page yet.
+      event: { type: "answers", answers: { q_ankle: "yes" } },
+      patientAck: "Thanks — a nurse will call you shortly to check in.",
       expectedTier: "watch",
     },
     {
       slug: "chen",
       beatIndex: 2,
       event: {
-        type: "answers",
-        // RED flags confirmed in the TEXT: rapid spread + new fever + red streaks. Under
-        // call-first this HOLDS at WATCH and places the verification call — no page yet.
-        answers: { q_pain: 7, q_spread: "fast", q_fever: "yes", b_screen: ["streak"] },
-      },
-      patientAck: "Thanks — a nurse will call you shortly to check in.",
-      expectedTier: "watch",
-    },
-    {
-      slug: "chen",
-      beatIndex: 3,
-      event: {
         // The verification call comes back. Live, VIG-16's post-call webhook posts this; in the
-        // scripted demo the driver injects it. Structured yes/no confirmations map to the same
-        // red flags → guardrail escalates → nurse paged. THIS is the escalation moment.
+        // scripted demo the driver injects it. Confirms rapid spread → guardrail escalates → page.
         type: "call_result",
         transcript:
-          "On the call the patient said the redness is spreading quickly up the shin, a new fever started about an hour ago, and there are red streaks past the knee. She sounds increasingly unwell.",
-        structured: { q_spread: "fast", q_fever: "yes" },
+          "On the call the patient said her redness was only to mid-leg on arrival but is now up to the ankle, she's had cellulitis before but nothing that spreads this fast, and her pain is now about 8/10.",
+        structured: { q_ankle: "yes", q_pain_inc: "yes" },
       },
       patientAck: "Thanks for talking just now.",
       expectedTier: "escalate",
