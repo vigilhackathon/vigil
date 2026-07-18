@@ -1,0 +1,4 @@
+# generated per-visit frozen protocols (the DB in production)
+visits/
+__pycache__/
+*.pyc

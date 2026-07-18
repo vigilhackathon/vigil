@@ -1,0 +1,132 @@
+ABDOMINAL PAIN — ED NURSING ASSESSMENT
+
+Abdominal pain is the most common chief complaint in adults >=65 presenting to the ED (1.4
+million visits/year in the US), carries a 5.3% 60-day mortality in geriatric patients, and is
+among the highest-risk conditions for mis-triage — with 8% mis-triage rate in large
+retrospective series, where surgical emergencies are more often misdirected to medicine than
+the reverse.
+
+IMMEDIATE TRIAGE PRIORITIES (FIRST 60 SECONDS)
+
+ESI Level I (Immediate resuscitation) — call physician NOW if any of:
+- Hemodynamic instability: hypotension (SBP <90), tachycardia (HR >120), shock signs (pallor,
+  diaphoresis, AMS, mottling)
+- Pulsatile abdominal mass -> AAA until proven otherwise
+- Peritoneal signs: rigid/board-like abdomen, guarding, rebound
+- Syncope or near-syncope + abdominal pain
+- Pregnancy + abdominal pain + hemodynamic instability -> ectopic rupture
+- Severe pain score (>=9) + acute onset ("worst pain of life")
+
+ESI Level II (Evaluation within 10 min) — urgent physician notification:
+- Severe abdominal pain + fever >=38.5 C
+- Signs of peritonitis without shock
+- Immunocompromised patient with any abdominal pain
+- Elderly patient (>65) with abdominal pain — always higher acuity than it appears
+- Vomiting + distension + inability to pass stool/flatus -> obstruction
+- Pain out of proportion to exam -> mesenteric ischemia or early NSTI
+
+OMINOUS SIGNS — MUST NOT MISS
+- Hemodynamic instability -> AAA rupture, ectopic, mesenteric ischemia, perforated viscus,
+  sepsis. Immediate resuscitation, 2 large-bore IVs, physician NOW.
+- Pulsatile epigastric/umbilical mass -> Ruptured AAA (mortality >80% without emergent
+  surgery). Do not delay for CT if unstable — OR directly.
+- Acute-onset maximal pain ("thunderclap") -> Ruptured AAA, aortic dissection, perforated
+  viscus. Emergent CT angio if stable.
+- Pain out of proportion to exam -> Mesenteric ischemia (classic triad; early stages
+  deceptively benign). Emergent CT angiography; lactate.
+- Rigid/board-like abdomen -> Perforated viscus, generalized peritonitis. NPO, IV access,
+  surgical consult immediately.
+- Positive Murphy's sign (RUQ pain + inspiratory arrest on palpation) -> Acute cholecystitis.
+- McBurney's point tenderness + RLQ rebound -> Appendicitis.
+- Bilateral lower extremity pain in elderly -> Mesenteric ischemia, not cellulitis.
+- Pregnancy + unilateral adnexal pain/tenderness + hemodynamic instability -> Ectopic
+  pregnancy — urine hCG first, always.
+- Elderly patient with "mild" pain but tachycardia -> Never underestimate; atypical
+  presentations are the rule. Full workup regardless of pain score.
+- Fever + jaundice + RUQ pain (Charcot's triad) -> Acute cholangitis (add hypotension + AMS =
+  Reynolds pentad -> septic shock).
+- Distension + high-pitched or absent bowel sounds + obstipation -> Bowel obstruction.
+- Flank pain radiating to groin + hematuria -> Urolithiasis. But ALWAYS rule out AAA first in
+  >50yo.
+
+STRUCTURED NURSING ASSESSMENT (OPQRST + CRITICAL HISTORY)
+
+Pain characterization:
+- Onset: Sudden = perforation, AAA rupture, ectopic; gradual = inflammatory (appendicitis,
+  cholecystitis, PID).
+- Location -> migration:
+  - Periumbilical -> RLQ migration = appendicitis (LR+ 4.81 for pain migration).
+  - Epigastric -> diffuse = perforation, pancreatitis.
+  - RUQ = cholecystitis, hepatitis, cholangitis.
+  - LLQ = diverticulitis (severe LLQ in elderly first).
+  - Diffuse = peritonitis, mesenteric ischemia, early bowel obstruction.
+  - Flank/loin -> groin = urolithiasis (but rule out AAA in >50yo).
+  - Back + epigastric = pancreatitis, AAA.
+- Quality: Colicky (waves) = hollow viscus (biliary colic, ureteral stone, obstruction);
+  constant = inflammatory or ischemic.
+- Radiation: Right shoulder = diaphragmatic irritation (free air, hepatic); back =
+  pancreatitis, AAA; left shoulder (Kehr's sign) = splenic pathology, hemoperitoneum.
+- Severity: High pain scores paradoxically increase correct triage accuracy.
+- Timing: Postprandial (fatty foods) = biliary; nocturnal = peptic ulcer; post-alcohol binge
+  = pancreatitis.
+
+Critical associated symptoms:
+- Vomiting: before pain -> gastroenteritis; after pain -> surgical.
+- Last bowel movement / flatus: obstipation = obstruction until excluded.
+- Hematochezia/melena: GI bleeding, ischemic colitis.
+- Dysuria/hematuria: UTI, ureteral stone, but also appendicitis.
+- Vaginal bleeding/discharge: ectopic, PID, miscarriage.
+- Fever: absent in elderly/immunocompromised even with serious pathology — do NOT reassure
+  yourself with a normal temperature.
+- Anorexia/nausea: appendicitis, bowel obstruction.
+
+High-risk history (ask every patient):
+- LMP + pregnancy status in all women of childbearing age -> urine beta-hCG immediately.
+- Menstrual/gynecologic history: ovarian torsion, endometriosis, ectopic.
+- Prior surgeries (esp. abdominal) -> adhesions/obstruction; bariatric patients high-risk with
+  deceptively benign exams.
+- Cardiac history + atrial fibrillation -> mesenteric ischemia (embolic).
+- AAA history or known aneurysm.
+- Anticoagulants/steroids: mask peritoneal signs; steroids suppress fever.
+- Immunocompromise (HIV, transplant, chemotherapy, diabetes) -> atypical presentations.
+- IBD/prior similar episodes. Alcohol use. Travel/sick contacts.
+
+KEY POPULATIONS
+- Elderly (>65): most dangerous group — 40% experience admission, operation, or death within
+  2 weeks. Atypical presentations are the norm (minimal pain, normal temperature, normal WBC
+  all falsely reassuring). Default to higher acuity regardless of pain score or appearance.
+- Women of childbearing age: beta-hCG immediately at triage, no exception. Ectopic can rupture
+  at any beta-hCG level; stable vitals do not exclude active hemorrhage.
+- Pregnant: appendicitis is the most common non-obstetric surgical emergency; pain location
+  shifts cephalad; US first-line, MRI if equivocal (avoid CT).
+- Bariatric surgery history: exam notoriously unreliable; any persistent pain + tachycardia +
+  tachypnea -> low threshold for surgical consult. Do NOT be reassured by stable appearance.
+- Immunocompromised: absent fever and near-normal labs despite serious pathology; low
+  threshold for broad workup and early ID/surgical consult.
+
+COMMON DIAGNOSES BY LOCATION
+- RUQ: cholecystitis, cholangitis, hepatitis, peptic ulcer. Escalate if jaundice + fever + AMS
+  (Reynolds pentad = septic shock).
+- Epigastric: pancreatitis, peptic ulcer, GERD, MI, AAA. Escalate if lipase >3x normal or
+  hemodynamic instability.
+- RLQ: appendicitis, ovarian torsion, ectopic, Crohn's. Escalate if peritoneal signs, positive
+  beta-hCG, high AIR/Alvarado.
+- LLQ: diverticulitis, ovarian cyst/torsion, sigmoid volvulus. Escalate if severe pain + fever
+  + mass (abscess/perforation).
+- Diffuse: peritonitis, mesenteric ischemia, bowel obstruction, DKA. Board-like abdomen,
+  distension, pain out of proportion.
+- Flank/back: urolithiasis, pyelonephritis, AAA. >50yo + back pain -> rule out AAA first.
+- Periumbilical: early appendicitis, bowel obstruction, mesenteric ischemia. Migrating RLQ +
+  fever + nausea -> image emergently.
+
+MIS-TRIAGE RISK (nursing-specific)
+Retrospective study of 13,416 non-traumatic abdominal pain patients: 8.02% mis-triaged.
+Independent risk factors: walking to triage (OR 1.76 — ambulatory surgical emergencies
+frequently undertriaged), more accompanying symptoms (OR 1.22), lower pain scores (OR 0.78 per
+point decrease — low pain scores paradoxically increase mis-triage risk), male sex (OR 1.14),
+less experienced triage nurse.
+
+CLINICAL RULE: Never let a low pain score, ambulatory arrival, or calm appearance falsely
+reassure you. Elderly, bariatric surgery, immunocompromised, and pregnant patients require
+higher default acuity regardless of how they look at triage. If uncertain, escalate — do not
+reassess in an hour.
